@@ -53,4 +53,38 @@ class TestViews(TestCase):
         self.assertEquals(User.objects.count(), 1)
         # check that the student is created
         self.assertEquals(Student.objects.count(), 1)
+        # check that the student's user is the user we created
+        self.assertEquals(Student.objects.get().user.username, 'testuser')
+        # check that the user is logged in
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
 
+    def test_register_POST_invalid(self):
+        # create a user
+        user = {
+            'username': 'testuser',
+            'email': 'nonemail',
+            'password1': 'testpassword',
+            'password2': 'nonmatchingpassword',
+            'role': 'STUDENT'
+        }
+
+        # post the user to the register url
+        response = self.client.post(self.register_url, user)
+        # check that the user is redirected
+        self.assertEquals(response.status_code, 200)
+        # check that the user is not created
+        self.assertEquals(User.objects.count(), 0)
+        # check that the student is not created
+        self.assertEquals(Student.objects.count(), 0)
+
+class TestModels(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(
+            username='testuser',
+            email='test@test.com',
+            password='testpassword',
+            role='STUDENT'
+        )
+        
+        

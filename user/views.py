@@ -16,9 +16,10 @@ def register(request):
             # check if the user is a student or a teacher
             role = form.cleaned_data['role']
             if role == 'STUDENT':
-                # create a student object, getting the user by username
-                student = Student.objects.create(user=User.objects.get(username=form.cleaned_data.get('username')))
-            return redirect('core:index')
+                return redirect('core:index')
+            
+            elif role == 'TEACHER':
+                return redirect('core:index')
 
     form = RegisterForm()
         
