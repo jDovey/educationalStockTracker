@@ -18,14 +18,9 @@ def register(request):
             if role == 'STUDENT':
                 # create a student object, getting the user by username
                 student = Student.objects.create(user=User.objects.get(username=form.cleaned_data.get('username')))
-                return HttpResponse('student created')
+            return redirect('core:index')
 
     form = RegisterForm()
         
     return render(request, 'user/register.html', {'form': form})
 
-def login(request):
-    return render(request, 'user/login.html')
-
-def logout(request):
-    return render(request, 'user/login.html')
