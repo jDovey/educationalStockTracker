@@ -88,7 +88,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 DATABASES = {
     'default': dj_database_url.config(
         # Feel free to alter this value to suit your needs.
-        default=DATABASE_URL,
+        default="postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB",
         conn_max_age=600
     )
 }
