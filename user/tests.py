@@ -1,4 +1,4 @@
-from django.test import TestCase, SimpleTestCase
+from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
 from .views import register, login, logout
@@ -20,6 +20,3 @@ class TestUrls(SimpleTestCase):
         url = reverse('user:logout')
         self.assertEquals(resolve(url).func, logout)
 
-
-
-    
