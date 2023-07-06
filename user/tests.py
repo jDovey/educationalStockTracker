@@ -81,10 +81,34 @@ class TestModels(TestCase):
 
     def setUp(self):
         self.user = User.objects.create(
-            username='testuser',
+            username='testuserStudent',
             email='test@test.com',
             password='testpassword',
             role='STUDENT'
         )
-        
+
+    
+    def test_user_is_created(self):
+        # test that a user is created and that the user's attributes are correct
+        self.assertEquals(User.objects.count(), 1)
+        self.assertEquals(User.objects.get().username, 'testuserStudent')
+        self.assertEquals(User.objects.get().email, 'test@test.com')
+        self.assertEquals(User.objects.get().role, 'STUDENT')
+
+    def test_student_is_created(self):
+        # test that a student is created and that the student's attributes are correct
+        self.assertEquals(Student.objects.count(), 1)
+        self.assertEquals(Student.objects.get().user.username, 'testuserStudent')
+        self.assertEquals(Student.objects.get().user.email, 'test@test.com')
+        self.assertEquals(Student.objects.get().user.role, 'STUDENT')
+
+    def test_user_is_deleted(self):
+        # test that a user is deleted correctly
+        self.user.delete()
+        self.assertEquals(User.objects.count(), 0)
+
+    def test_student_is_deleted(self):
+        # test that a student is deleted correctly when its user is deleted
+        self.user.delete()
+        self.assertEquals(Student.objects.count(), 0)
         

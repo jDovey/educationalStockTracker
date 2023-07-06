@@ -16,7 +16,8 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    
+
+# Create a student when a user is created
 @receiver(post_save, sender=User)
 def create_student(sender, instance, created, **kwargs):
     if created and instance.role == 'STUDENT':
@@ -29,7 +30,8 @@ class Student(models.Model):
     
     def __str__(self):
         return self.user.username
-    
+
+# Create a teacher when a user is created
 @receiver(post_save, sender=User)
 def create_teacher(sender, instance, created, **kwargs):
     if created and instance.role == 'TEACHER':
