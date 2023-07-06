@@ -86,7 +86,6 @@ class TestModels(TestCase):
             password='testpassword',
             role='STUDENT'
         )
-
     
     def test_user_is_created(self):
         # test that a user is created and that the user's attributes are correct
