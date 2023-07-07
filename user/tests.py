@@ -110,4 +110,3 @@ class TestModels(TestCase):
         # test that a student is deleted correctly when its user is deleted
         self.user.delete()
         self.assertEquals(Student.objects.count(), 0)
-        

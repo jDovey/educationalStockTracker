@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from .utils import lookup
+
 # Create your views here.
 
 
@@ -9,6 +11,7 @@ def index(request):
 
 @login_required
 def buy(request):
+    lookup('AAPL')
     return render(request, 'core/buy.html')
 
 @login_required
