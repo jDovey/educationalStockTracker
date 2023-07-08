@@ -12,7 +12,45 @@ from user.models import Student
 import decimal
 
 # Create your views here.
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
 def index(request):
+    if request.method == 'POST':
+        # Get the student object.
+        student = get_object_or_404(Student, user=request.user)
+        # Get the holdings of the student.
+        holdings = Holdings.objects.filter(student=student).values('symbol').annotate(total_quantity=Count('symbol'), total_purchase_price=F('purchase_price') * F('total_quantity')).order_by('symbol')
+        
+        stocks = []
+        for holding in holdings:
+            # Call lookup function from utils.py, the api call is made here.
+            price = lookup(holding['symbol'])
+            
+            # Check if the api call was successful.
+            if price == "API LIMIT":
+                messages.error(request, 'API LIMIT.')
+                return redirect('core:history')
+            elif price == "INVALID SYMBOL":
+                messages.error(request, 'Invalid symbol.')
+                return redirect('core:history')
+            
+            # Calculate the total value of the stock.
+            totalValue = price * decimal.Decimal(holding['total_quantity'])
+            
+            # Calculate the profit/loss of the stock.
+            profitLoss = totalValue - decimal.Decimal(holding['total_purchase_price'])
+            
+            # Add the stock to the list.
+            stocks.append({
+                'symbol': holding['symbol'],
+                'total_quantity': holding['total_quantity'],
+                'total_purchase_price': holding['total_purchase_price'],
+                'price': price,
+                'totalValue': totalValue,
+                'profitLoss': profitLoss,
+                })
+        return render(request, 'core/index.html', {'stocks': stocks, 'balance': student.balance})
+
     return render(request, 'core/index.html')
 
 @login_required
@@ -115,8 +153,14 @@ def quote(request):
         'price': price
         })
     
-        
-        
-    
     form = QuoteForm()
     return render(request, 'core/quote.html', {'form': form})
+
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def history(request):
+    student = get_object_or_404(Student, user=request.user)
+    transactions = Transactions.objects.filter(student=student)
+    return render(request, 'core/history.html', {
+        'transactions': transactions
+        })

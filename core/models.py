@@ -15,7 +15,7 @@ class Transactions(models.Model):
         ordering = ['-date']
 
     def __str__(self):
-        return f'{self.quantity} {self.symbol} (${self.purchase_price}) | {self.student.user.username}'
+        return self.symbol
     
 class Holdings(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

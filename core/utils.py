@@ -7,29 +7,20 @@ def lookup(symbol):
 
     import requests
 
-    url = "https://alpha-vantage.p.rapidapi.com/query"
+    url = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=QRM8PZIX9EXKT0SI' % symbol
+    r = requests.get(url)
+    data = r.json()
 
-    querystring = {"function":"GLOBAL_QUOTE","symbol":symbol,"datatype":"json"}
-
-    # DO NOT COMMIT API KEY
-    
-    headers = {
-        "X-RapidAPI-Key": os.environ.get('API_KEY'),
-        "X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com"
-    }
-
-    response = requests.get(url, headers=headers, params=querystring)
-
-    quote = response.json()
+    quote = r.json()
 
     try:
-        print(response.status_code)
+        print(r.status_code)
         print(quote)
         print(quote["Global Quote"]["05. price"])
     except:
         print("API call failed.")
 
-    if response.status_code != 200:
+    if r.status_code != 200:
         return "API LIMIT"
     elif quote["Global Quote"] == {}:
         return "INVALID SYMBOL"
