@@ -4,11 +4,12 @@
     
 {% block content %}
     <div class="form-group">
-        <h1>Price</h1>
         {% if price %}
-            <p>Price of {{ symbol }} is ${{ price }}</p>
+            <h1>{{ symbol }}: is ${{ price }}</h1>
         {% else %}
-            <p>Symbol not found</p>
+            <h1>Symbol not found</h1>
         {% endif %}
+
+        <button class="m-3 btn btn-primary" onclick="window.history.back();">Back</button>
     </div>
 {% endblock %}

@@ -36,6 +36,7 @@ def quote(request):
             messages.error(request, 'Invalid symbol.')
             return redirect('core:quote')
 
+        symbol = symbol.upper()
         return render(request, 'core/price.html', {
         'symbol': symbol,
         'price': price
