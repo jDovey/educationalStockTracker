@@ -3,6 +3,25 @@
 {% block title %}Buy{% endblock %}
     
 {% block content %}
-    <h1>Buy</h1>
-    <h2>{{ request.user.username }}</h2>
+<div>
+    <form action="." method="post">
+        <div class="form-group"></div>
+        {% csrf_token %}
+        {{ form.symbol }}
+        {{ form.shares }}
+
+        <!-- Display any form errors -->
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p style="color: red">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        </div>
+
+        
+        
+        
+        <button class="m-3 btn btn-primary" type="submit">Buy</button>
+    </form>
+</div>
 {% endblock %}

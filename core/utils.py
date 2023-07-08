@@ -1,5 +1,6 @@
 import requests
 import os
+import decimal
 
 def lookup(symbol):
 
@@ -33,4 +34,6 @@ def lookup(symbol):
     elif quote["Global Quote"] == {}:
         return "INVALID SYMBOL"
     
-    return quote["Global Quote"]["05. price"]
+    price = quote["Global Quote"]["05. price"]
+    price = price[:-2]
+    return decimal.Decimal(price)
