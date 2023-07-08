@@ -81,6 +81,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'educaitonalStockTracker.wsgi.application'
 
+# !!!DO NOT DEPLOY, TESTING USE ONLY!!!
+DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB')
+
 DATABASE_URL = os.environ.get('DATABASE_URL')
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -128,7 +131,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Price{% endblock %}
+    
+{% block content %}
+    <div class="form-group">
+        <h1>Price</h1>
+        {% if price %}
+            <p>Price of {{ symbol }} is ${{ price }}</p>
+        {% else %}
+            <p>Symbol not found</p>
+        {% endif %}
+    </div>
+{% endblock %}

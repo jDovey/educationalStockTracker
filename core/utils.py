@@ -22,6 +22,15 @@ def lookup(symbol):
     quote = response.json()
 
     try:
+        print(response.status_code)
+        print(quote)
         print(quote["Global Quote"]["05. price"])
     except:
         print("API call failed.")
+
+    if response.status_code != 200:
+        return "API LIMIT"
+    elif quote["Global Quote"] == {}:
+        return "INVALID SYMBOL"
+    
+    return quote["Global Quote"]["05. price"]
