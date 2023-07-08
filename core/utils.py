@@ -10,6 +10,8 @@ def lookup(symbol):
 
     querystring = {"function":"GLOBAL_QUOTE","symbol":symbol,"datatype":"json"}
 
+    # DO NOT COMMIT API KEY
+    
     headers = {
         "X-RapidAPI-Key": os.environ.get('API_KEY'),
         "X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com"
