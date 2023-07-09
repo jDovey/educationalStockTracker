@@ -3,7 +3,11 @@
 {% block title %}Dashboard{% endblock %}
     
 {% block content %}
-    <h1>Dashboard</h1>
+    <!-- button that sends a post request to index so the dashboard will show-->
+    <form action="{% url 'core:index' %}" method="post">
+        {% csrf_token %}
+        <button class="btn btn-primary btn-lg m-2" type="submit">View Dashboard</button>
+    </form>
     <table class="table table-striped table-dark table-hover">
         <thead>
             <tr>
@@ -29,10 +33,19 @@
         </tbody>
     </table>
 
-    <!-- button that sends a post request to index so the dashboard will show-->
-    <form action="{% url 'core:index' %}" method="post">
-        {% csrf_token %}
-        <button class="btn btn-primary" type="submit">View Dashboard</button>
-    </form>
+    <table class="table table-striped table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Cash</th>
+                <th>Overall Balance</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            <tr>
+                <td>${{ request.user.student.cash }}</td>
+                <td>${{ request.user.student.total_value }}</td>
+            </tr>
+        </tbody>
+    </table>
 {% endblock %}
     

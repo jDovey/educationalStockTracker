@@ -8,14 +8,14 @@
         <thead>
             <tr>
                 <th>Username</th>
-                <th>Total Value</th>
+                <th>Overall Balance</th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
             {% for student in students %}
             <tr>
                 <td>{{ student.user.username }}</td>
-                <td>{{ student.total_value }}</td>
+                <td>${{ student.total_value }}</td>
             </tr>
             {% endfor %}
         </tbody>

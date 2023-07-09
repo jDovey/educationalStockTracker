@@ -57,7 +57,7 @@ def index(request):
         if stocks:
             student.total_value = totalValue + F('cash')
             student.save()
-        return render(request, 'core/index.html', {'stocks': stocks, 'balance': student.cash})
+        return render(request, 'core/index.html', {'stocks': stocks})
 
     return render(request, 'core/index.html')
 
