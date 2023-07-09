@@ -27,6 +27,10 @@ class SellForm(forms.Form):
         'placeholder': 'Holding',
         'autofocus': 'autofocus',
         }))
+    quantity = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Number of shares',
+        }))
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')

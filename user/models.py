@@ -25,7 +25,8 @@ def create_student(sender, instance, created, **kwargs):
     
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
+    cash = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
+    total_value = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     xp = models.IntegerField(default=0)
     
     def __str__(self):

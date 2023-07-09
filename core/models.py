@@ -20,6 +20,7 @@ class Transactions(models.Model):
 class Holdings(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     symbol = models.CharField(max_length=10)
+    quantity = models.IntegerField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     
     class Meta:
@@ -27,4 +28,4 @@ class Holdings(models.Model):
         ordering = ['symbol']
     
     def __str__(self):
-        return f'{self.symbol} (${self.purchase_price})'
+        return f'{self.quantity} | {self.symbol} (${self.purchase_price})'

@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import F, Count
+from django.db.models import F, Sum
 
 from .utils import lookup
 from user.decorators import allowed_users
@@ -18,8 +18,9 @@ def index(request):
     if request.method == 'POST':
         # Get the student object.
         student = get_object_or_404(Student, user=request.user)
-        # Get the holdings of the student.
-        holdings = Holdings.objects.filter(student=student).values('symbol').annotate(total_quantity=Count('symbol'), total_purchase_price=F('purchase_price') * F('total_quantity')).order_by('symbol')
+        # get the holdings of the student and group the holdings by symbol and purchase price
+        holdings = Holdings.objects.filter(student=student).values('symbol', 'purchase_price').annotate(quantity=Sum('quantity'))
+
         
         stocks = []
         for holding in holdings:
@@ -35,21 +36,21 @@ def index(request):
                 return redirect('core:history')
             
             # Calculate the total value of the stock.
-            totalValue = price * decimal.Decimal(holding['total_quantity'])
-            
+            totalValue = price * decimal.Decimal(holding['quantity'])
+            totalPurchasePrice = holding['purchase_price'] * (holding['quantity'])
             # Calculate the profit/loss of the stock.
-            profitLoss = totalValue - decimal.Decimal(holding['total_purchase_price'])
+            profitLoss = totalValue - totalPurchasePrice
             
             # Add the stock to the list.
             stocks.append({
                 'symbol': holding['symbol'],
-                'total_quantity': holding['total_quantity'],
-                'total_purchase_price': holding['total_purchase_price'],
+                'total_quantity': holding['quantity'],
+                'purchase_price': holding['purchase_price'],
                 'price': price,
                 'totalValue': totalValue,
                 'profitLoss': profitLoss,
                 })
-        return render(request, 'core/index.html', {'stocks': stocks, 'balance': student.balance})
+        return render(request, 'core/index.html', {'stocks': stocks, 'balance': student.cash})
 
     return render(request, 'core/index.html')
 
@@ -79,20 +80,22 @@ def buy(request):
             student = get_object_or_404(Student, user=request.user)
 
             # Check if the student has enough balance to make the purchase.
-            if student.balance < totalCost:
+            if student.cash < totalCost:
                 messages.error(request, 'Insufficient funds.')
                 return redirect('core:buy')
             
             # Update the student's balance.
             # F is used to prevent race conditions.
-            student.balance = F("balance") - totalCost
+            student.cash = F("cash") - totalCost
             student.save()
+
+            # Create a transaction object.
             transaction = Transactions(student=student, symbol=symbol, quantity=shares, purchase_price=price)
             transaction.save()
 
-            for i in range(shares):
-                holding = Holdings(student=student, symbol=symbol, purchase_price=price)
-                holding.save()
+
+            holding = Holdings(student=student, symbol=symbol, purchase_price=price, quantity=shares)
+            holding.save()
             
             messages.success(request, 'Successful transaction! %s %s share(s) at $%s per share.' % (shares, symbol, price))
             return render(request, 'core/index.html')
@@ -108,20 +111,38 @@ def sell(request):
         if form.is_valid():
             # Get the holding object.
             holding = form.cleaned_data['holding']
+            quantity = form.cleaned_data['quantity']
+
             # Get the symbol of the stock.
             symbol = holding.symbol
-            # Get the price of the stock.
-            price = lookup(symbol)
             # Get the student object.
             student = get_object_or_404(Student, user=request.user)
+
+            # Check if the student has enough shares to sell.
+            if holding.quantity < quantity:
+                messages.error(request, 'Insufficient shares.')
+                return redirect('core:sell')
+            
+            # Update the holding object.
+            if quantity == holding.quantity:
+                holding.delete()
+            else:
+                holding.quantity = F("quantity") - quantity
+                holding.save()
+
+            # Get the price of the stock.
+            price = lookup(symbol)
+
             # Update the student's balance. F is used to prevent race conditions.
-            student.balance = F("balance") + price
+            student.cash = F("cash") + (price * decimal.Decimal(quantity))
             student.save()
-            holding.delete()
+
             # Create a transaction a new transaction for this sale.
-            transaction = Transactions(student=student, symbol=symbol, quantity=-1, purchase_price=price)
+            transaction = Transactions(student=student, symbol=symbol, quantity=-quantity, purchase_price=price)
             transaction.save()
-            messages.success(request, 'Successful transaction! Sold 1 %s share at $%s per share. For a profit/loss of $%s!' % (symbol, price, price - holding.purchase_price))
+
+            messages.success(request, 'Successful transaction! Sold %s %s share(s) at $%s per share. For a profit/loss of $%s!' % (quantity, symbol, price, price - holding.purchase_price))
+
             return render(request, 'core/index.html')
     form = SellForm(request=request)
     return render(request, 'core/sell.html', {
@@ -163,4 +184,12 @@ def history(request):
     transactions = Transactions.objects.filter(student=student)
     return render(request, 'core/history.html', {
         'transactions': transactions
+        })
+
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def leaderboard(request):
+    students = Student.objects.all().order_by('-total_value')
+    return render(request, 'core/leaderboard.html', {
+        'students': students
         })
