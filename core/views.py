@@ -23,20 +23,23 @@ def index(request):
 
         
         stocks = []
+        prices = {}
         for holding in holdings:
             # Call lookup function from utils.py, the api call is made here.
-            price = lookup(holding['symbol'])
+            if holding['symbol'] not in prices:
+                price = lookup(holding['symbol'])
+                prices[holding['symbol']] = price
             
             # Check if the api call was successful.
-            if price == "API LIMIT":
+            if prices[holding['symbol']] == "API LIMIT":
                 messages.error(request, 'API LIMIT.')
                 return redirect('core:history')
-            elif price == "INVALID SYMBOL":
+            elif prices[holding['symbol']] == "INVALID SYMBOL":
                 messages.error(request, 'Invalid symbol.')
                 return redirect('core:history')
             
             # Calculate the total value of the stock.
-            totalValue = price * decimal.Decimal(holding['quantity'])
+            totalValue = prices[holding['symbol']] * decimal.Decimal(holding['quantity'])
             totalPurchasePrice = holding['purchase_price'] * (holding['quantity'])
             # Calculate the profit/loss of the stock.
             profitLoss = totalValue - totalPurchasePrice
@@ -46,10 +49,14 @@ def index(request):
                 'symbol': holding['symbol'],
                 'total_quantity': holding['quantity'],
                 'purchase_price': holding['purchase_price'],
-                'price': price,
+                'price': prices[holding['symbol']],
                 'totalValue': totalValue,
                 'profitLoss': profitLoss,
                 })
+        
+        if stocks:
+            student.total_value = totalValue + F('cash')
+            student.save()
         return render(request, 'core/index.html', {'stocks': stocks, 'balance': student.cash})
 
     return render(request, 'core/index.html')
