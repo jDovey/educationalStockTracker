@@ -4,6 +4,7 @@
     
 {% block content %}
     <!-- button that sends a post request to index so the dashboard will show-->
+    {% if request.user.role == 'STUDENT' %}
     <form action="{% url 'core:index' %}" method="post">
         {% csrf_token %}
         <button class="btn btn-primary btn-lg m-2" type="submit">View Dashboard</button>
@@ -47,5 +48,7 @@
             </tr>
         </tbody>
     </table>
+    {% endif %}
+
 {% endblock %}
     

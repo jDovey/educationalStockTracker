@@ -25,7 +25,7 @@ class TestUrls(SimpleTestCase):
         url = reverse('core:quote')
         self.assertEquals(resolve(url).func, quote)
 
-    def test_hitory_url_is_resolved(self):
+    def test_history_url_is_resolved(self):
         url = reverse('core:history')
         self.assertEquals(resolve(url).func, history)
 
@@ -152,6 +152,7 @@ class TestBuy(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
         self.assertEquals(Holdings.objects.count(), 1)
+        self.assertEquals(Transactions.objects.count(), 1)
     
     # test that buy view redirects back to buy page if symbol is invalid
     def test_buy_POST_invalid_symbol(self):
@@ -173,7 +174,7 @@ class TestBuy(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, '/buy/')
 
-class Testsell(TestCase):
+class TestSell(TestCase):
     def setUp(self):
         self.client = Client()
         self.index_url = reverse('core:index')
@@ -215,6 +216,7 @@ class Testsell(TestCase):
         self.assertTemplateUsed(response, 'core/index.html')
         # check that holding object has been deleted
         self.assertEquals(Holdings.objects.count(), 0)
+        self.assertEquals(Transactions.objects.count(), 1)
     
     def test_sell_POST_invalid_shares(self):
         response = self.client.post(self.sell_url, {
@@ -227,6 +229,7 @@ class Testsell(TestCase):
         self.assertRedirects(response, '/sell/')
         # check that holding object has not been deleted
         self.assertEquals(Holdings.objects.count(), 1)
+        self.assertEquals(Transactions.objects.count(), 0)
 
 class TestHistory(TestCase):
     def setUp(self):
@@ -289,3 +292,41 @@ class TestLeaderboard(TestCase):
         
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, '/user/login/?next=/leaderboard/')
+
+class TestHoldingsModel(TestCase):
+    def setUp(self):
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # create a holding object
+        self.holding = Holdings.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00, )
+    
+    # test that holding object is created correctly
+    def test_holding_creation(self):
+        self.assertEquals(self.holding.student, self.user.student)
+        self.assertEquals(self.holding.symbol, 'AAPL')
+        self.assertEquals(self.holding.quantity, 1)
+        self.assertEquals(self.holding.purchase_price, 1.00)
+    
+    # test that holding object is deleted correctly
+    def test_holding_deletion(self):
+        self.holding.delete()
+        self.assertEquals(Holdings.objects.count(), 0)
+
+class TestTransactionsModel(TestCase):
+    def setUp(self):
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # create a transaction object
+        self.transaction = Transactions.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00)
+    
+    # test that transaction object is created correctly
+    def test_transaction_creation(self):
+        self.assertEquals(self.transaction.student, self.user.student)
+        self.assertEquals(self.transaction.symbol, 'AAPL')
+        self.assertEquals(self.transaction.quantity, 1)
+        self.assertEquals(self.transaction.purchase_price, 1.00)
+    
+    # test that transaction object is deleted correctly
+    def test_transaction_deletion(self):
+        self.transaction.delete()
+        self.assertEquals(Transactions.objects.count(), 0)

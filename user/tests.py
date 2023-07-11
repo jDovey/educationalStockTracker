@@ -75,7 +75,7 @@ class TestViews(TestCase):
         # check that the student is not created
         self.assertEquals(Student.objects.count(), 0)
 
-class TestModels(TestCase):
+class TestUserModel(TestCase):
 
     def setUp(self):
         self.user = User.objects.create(
@@ -92,19 +92,49 @@ class TestModels(TestCase):
         self.assertEquals(User.objects.get().email, 'test@test.com')
         self.assertEquals(User.objects.get().role, 'STUDENT')
 
+    # test that a user is deleted correctly
+    def test_user_is_deleted(self):
+        self.user.delete()
+        self.assertEquals(User.objects.count(), 0)
+
+class TestStudentModel(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username='testuserStudent',
+            email='test@test.com',
+            password='testpassword',
+            role='STUDENT'
+        )
+    
     # test that a student is created and that the student's attributes are correct
     def test_student_is_created(self):
         self.assertEquals(Student.objects.count(), 1)
         self.assertEquals(Student.objects.get().user.username, 'testuserStudent')
         self.assertEquals(Student.objects.get().user.email, 'test@test.com')
         self.assertEquals(Student.objects.get().user.role, 'STUDENT')
-
-    # test that a user is deleted correctly
-    def test_user_is_deleted(self):
-        self.user.delete()
-        self.assertEquals(User.objects.count(), 0)
-
+    
     # test that a student is deleted correctly when its user is deleted
     def test_student_is_deleted(self):
         self.user.delete()
         self.assertEquals(Student.objects.count(), 0)
+
+class TestTeacherModel(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            username='testuserTeacher',
+            email='test@test.com',
+            password='testpassword',
+            role='TEACHER'
+        )
+    
+    # test that a teacher is created and that the teacher's attributes are correct
+    def test_teacher_is_created(self):
+        self.assertEquals(User.objects.count(), 1)
+        self.assertEquals(User.objects.get().username, 'testuserTeacher')
+        self.assertEquals(User.objects.get().email, 'test@test.com')
+        self.assertEquals(User.objects.get().role, 'TEACHER')
+    
+    # test that a teacher is deleted correctly when its user is deleted
+    def test_teacher_is_deleted(self):
+        self.user.delete()
+        self.assertEquals(User.objects.count(), 0)

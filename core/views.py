@@ -13,7 +13,6 @@ import decimal
 
 # Create your views here.
 @login_required
-@allowed_users(allowed_roles=['STUDENT'])
 def index(request):
     if request.method == 'POST':
         # Get the student object.
@@ -33,10 +32,10 @@ def index(request):
             # Check if the api call was successful.
             if prices[holding['symbol']] == "API LIMIT":
                 messages.error(request, 'API LIMIT.')
-                return redirect('core:history')
+                return redirect('core:index')
             elif prices[holding['symbol']] == "INVALID SYMBOL":
                 messages.error(request, 'Invalid symbol.')
-                return redirect('core:history')
+                return redirect('core:index')
             
             # Calculate the total value of the stock.
             totalValue = prices[holding['symbol']] * decimal.Decimal(holding['quantity'])
@@ -54,8 +53,11 @@ def index(request):
                 'profitLoss': profitLoss,
                 })
         
+        # Calculate the total value of the student's portfolio.
+        totalValue = sum([stock['totalValue'] for stock in stocks])
+
         if stocks:
-            student.total_value = totalValue + F('cash')
+            student.total_value = totalValue + F("cash")
             student.save()
         return render(request, 'core/index.html', {'stocks': stocks})
 
@@ -172,7 +174,6 @@ def quote(request):
         form = QuoteForm(request.POST)
         if form.is_valid():
             symbol = form.cleaned_data['symbol']
-            print(symbol)
 
             price = lookup(symbol)
 

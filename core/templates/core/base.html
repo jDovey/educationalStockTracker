@@ -21,16 +21,15 @@
 
 <body>
     <nav class="navbar navbar-expand-md navbar-light bg-light border">
-        <a href="/" class="navbar-brand">Educational Stock Tracker</a>
+        <a href="{% url 'core:index' %}" class="navbar-brand">Educational Stock Tracker</a>
         <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbar" data-toggle="collapse" type="button">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbar">
-
             {% if request.user.is_authenticated %}
-            {% if request.user.role == 'STUDENT' %}
             <ul class="navbar-nav mr-auto mt-2">
+                {% if request.user.role == 'STUDENT' %}
                 <li class="nav-item">
                     <a href="{% url 'core:buy' %}" class="nav-link">Buy</a>
                 </li>
@@ -51,7 +50,7 @@
                     <a href="#" class="nav-link">Learn</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Classroom</a>
+                    <a href="{% url 'classroom:index' %}" class="nav-link">Classroom</a>
                 </li>
                 <li class="nav-item">
                     <a href="{% url 'user:logout' %}" class="nav-link">Logout</a>
@@ -74,7 +73,6 @@
         {% for msg in messages %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <strong>Alert!</strong> {{ msg }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </header>
         

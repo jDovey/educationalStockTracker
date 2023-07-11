@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from classroom.models import Classroom
+
 # Create your models here.
 
 class User(AbstractUser):
@@ -28,6 +30,7 @@ class Student(models.Model):
     cash = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     total_value = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     xp = models.IntegerField(default=0)
+    classroom = models.ForeignKey('classroom.Classroom', on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return self.user.username
