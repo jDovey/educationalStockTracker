@@ -70,3 +70,8 @@ main img
 td, th {
     border: 1px solid #dddddd;
 }
+
+.active-row {
+    font-weight: bold;
+    color: #537fbe;
+}

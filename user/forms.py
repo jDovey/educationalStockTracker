@@ -28,6 +28,10 @@ class RegisterForm(UserCreationForm):
         'class': 'form-control',
         'placeholder': 'Confirm Password',
         }))
+    
+    role = forms.ChoiceField(choices=User.Role.choices, widget=forms.Select(attrs={
+        'class': 'form-control',
+        }))
 
 class LoginForm(AuthenticationForm):
     class Meta:
