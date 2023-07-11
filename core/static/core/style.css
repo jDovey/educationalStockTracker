@@ -60,4 +60,15 @@ main img
 
     /* make corners round */
     border-radius: 10px;
+
+    display: inline-block;
+
+    border-collapse: collapse;
+
+    /* make table responsive */
+    overflow: auto;
+}
+
+td, th {
+    border: 1px solid #dddddd;
 }

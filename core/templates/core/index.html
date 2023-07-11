@@ -8,7 +8,7 @@
         {% csrf_token %}
         <button class="btn btn-primary btn-lg m-2" type="submit">View Dashboard</button>
     </form>
-    <table class="table table-striped table-dark table-hover">
+    <table class="table table-striped table-dark table-hover styled-table">
         <thead>
             <tr>
                 <th>Symbol</th>
@@ -19,7 +19,7 @@
                 <th>Profit/Loss</th>
             </tr>
         </thead>
-        <tbody class="table-group-divider">
+        <tbody>
             {% for stock in stocks %}
             <tr>
                 <td>{{ stock.symbol }}</td>
@@ -33,14 +33,14 @@
         </tbody>
     </table>
 
-    <table class="table table-striped table-dark table-hover">
+    <table class="table table-striped table-dark table-hover styled-table">
         <thead>
             <tr>
                 <th>Cash</th>
                 <th>Overall Balance</th>
             </tr>
         </thead>
-        <tbody class="table-group-divider">
+        <tbody>
             <tr>
                 <td>${{ request.user.student.cash }}</td>
                 <td>${{ request.user.student.total_value }}</td>

@@ -1,7 +1,7 @@
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
-from .views import index, buy, sell, quote
+from .views import index, buy, sell, quote, history, leaderboard
 from .models import Holdings, Transactions
 from user.models import User, Student
 # Create your tests here.
@@ -24,6 +24,14 @@ class TestUrls(SimpleTestCase):
     def test_quote_url_is_resolved(self):
         url = reverse('core:quote')
         self.assertEquals(resolve(url).func, quote)
+
+    def test_hitory_url_is_resolved(self):
+        url = reverse('core:history')
+        self.assertEquals(resolve(url).func, history)
+
+    def test_leaderboard_url_is_resolved(self):
+        url = reverse('core:leaderboard')
+        self.assertEquals(resolve(url).func, leaderboard)
         
 class TestQuote(TestCase):
     def setUp(self):
@@ -99,10 +107,9 @@ class TestIndex(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, '/user/login/?next=/')
     
+    # test that index view returns a 200 status code and uses the correct template on POST request with a logged in user
     def test_index_POST(self):
-        response = self.client.post(self.index_url, {
-            'symbol': 'AAPL'
-            })
+        response = self.client.post(self.index_url)
         
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
@@ -144,12 +151,23 @@ class TestBuy(TestCase):
         
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
+        self.assertEquals(Holdings.objects.count(), 1)
     
     # test that buy view redirects back to buy page if symbol is invalid
-    def test_buy_POST_invalid(self):
+    def test_buy_POST_invalid_symbol(self):
         response = self.client.post(self.buy_url, {
             'symbol': 'INVALID',
             'shares': 1
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/buy/')
+
+    # test that buy view redirects back to buy page if not enough cash
+    def test_buy_POST_not_enough_cash(self):
+        response = self.client.post(self.buy_url, {
+            'symbol': 'AAPL',
+            'shares': 1000000000
             })
         
         self.assertEquals(response.status_code, 302)
@@ -209,3 +227,65 @@ class Testsell(TestCase):
         self.assertRedirects(response, '/sell/')
         # check that holding object has not been deleted
         self.assertEquals(Holdings.objects.count(), 1)
+
+class TestHistory(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.index_url = reverse('core:index')
+        self.history_url = reverse('core:history')
+
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # login the user
+        self.client.login(username='testuser', password='testpass')
+
+        # create a holding object
+        self.holding = Holdings.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00, )
+        # create a transaction object
+        self.transaction = Transactions.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00)
+    
+    # test that history view returns a 200 status code and uses the correct template on GET request with a logged in user
+    def test_history_GET(self):
+        response = self.client.get(self.history_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/history.html')
+    
+    # test that history view redirects to login page if user is not logged in
+    def test_history_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.history_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/history/')
+
+class TestLeaderboard(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.index_url = reverse('core:index')
+        self.leaderboard_url = reverse('core:leaderboard')
+
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # login the user
+        self.client.login(username='testuser', password='testpass')
+
+        # create a holding object
+        self.holding = Holdings.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00, )
+        # create a transaction object
+        self.transaction = Transactions.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00)
+    
+    # test that leaderboard view returns a 200 status code and uses the correct template on GET request with a logged in user
+    def test_leaderboard_GET(self):
+        response = self.client.get(self.leaderboard_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/leaderboard.html')
+    
+    # test that leaderboard view redirects to login page if user is not logged in
+    def test_leaderboard_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.leaderboard_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/leaderboard/')

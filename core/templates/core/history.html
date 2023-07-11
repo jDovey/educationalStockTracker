@@ -9,14 +9,15 @@
             <tr>
                 <th>Symbol</th>
                 <th>Shares</th>
-                <th>Price</th>
+                <th>Price @ Purchase</th>
                 <th>Date</th>
             </tr>
         </thead>
         <tbody class="">
             {% for transaction in transactions %}
             <tr>
-                <td>{{ transaction.symbol }}</td>
+                <!-- create a td of the transaction symbol that will link to the quote page, passing the symbol-->
+                <td><a href="{% url 'core:quote' %}?symbol={{ transaction.symbol }}">{{ transaction.symbol }}</a></td>
                 <td>{{ transaction.quantity }}</td>
                 <td>{{ transaction.purchase_price }}</td>
                 <td>{{ transaction.date }}</td>

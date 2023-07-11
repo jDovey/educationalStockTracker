@@ -190,8 +190,12 @@ def quote(request):
         'price': price
         })
     
+    preSymbol = request.GET.get('symbol', '')
     form = QuoteForm()
-    return render(request, 'core/quote.html', {'form': form})
+    return render(request, 'core/quote.html', {
+        'form': form,
+        'preSymbol': preSymbol,
+        })
 
 @login_required
 @allowed_users(allowed_roles=['STUDENT'])

@@ -7,7 +7,13 @@
         <form action="." method="post">
             <div class="form-group"></div>
             {% csrf_token %}
-            {{ form.symbol }}
+            
+            {% if preSymbol %}
+                <input class="form-control" type="text" name="symbol" value="{{ preSymbol }}" required>
+            {% else %}
+                {{ form.symbol }}    
+            {% endif %}
+            
 
             <!-- Display any form errors -->
             {% for field in form %}
@@ -19,8 +25,12 @@
 
             
             
-            
+            {% if preSymbol %}
+            <button class="m-3 btn btn-primary" type="submit" autofocus="autofocus">Quote</button>
+            {% else %}
             <button class="m-3 btn btn-primary" type="submit">Quote</button>
+            {% endif %}
+
         </form>
     </div>
 {% endblock %}
