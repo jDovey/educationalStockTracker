@@ -7,7 +7,15 @@
     <h1>Login</h1>
     <form action="." method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="mb-3">
+            <label class="inline-block mb-2">Username:</label><br>
+            {{ form.username }}
+        </div>
+
+        <div class="mb-3">
+            <label class="inline-block mb-2">Password:</label><br>
+            {{ form.password }}
+        </div>
         <button class="btn btn-primary">Login</button>
     </form>
     <p>Don't have an account? <a href="{% url 'user:register' %}">Register</a></p>

@@ -2,7 +2,8 @@ from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
 from .views import index, buy, sell, quote
-from user.models import User
+from .models import Holdings, Transactions
+from user.models import User, Student
 # Create your tests here.
 
 class TestUrls(SimpleTestCase):
@@ -24,8 +25,53 @@ class TestUrls(SimpleTestCase):
         url = reverse('core:quote')
         self.assertEquals(resolve(url).func, quote)
         
-class TestViews(TestCase):
+class TestQuote(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.index_url = reverse('core:index')
+        self.buy_url = reverse('core:buy')
+        self.sell_url = reverse('core:sell')
+        self.quote_url = reverse('core:quote')
+
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # login the user
+        self.client.login(username='testuser', password='testpass')
     
+    # test that quote view returns a 200 status code and uses the correct template on GET request with a logged in user
+    def test_quote_GET(self):
+        response = self.client.get(self.quote_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/quote.html')
+    
+    # test that quote view redirects to login page if user is not logged in
+    def test_quote_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.quote_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/quote/')
+
+    # test that quote view returns a 200 status code and uses the correct template on POST request with a logged in user
+    def test_quote_POST(self):
+        response = self.client.post(self.quote_url, {
+            'symbol': 'AAPL'
+            })
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/price.html')
+
+    # test that quote view redirects back to quote page if symbol is invalid
+    def test_quote_POST_invalid(self):
+        response = self.client.post(self.quote_url, {
+            'symbol': 'INVALID'
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/quote/')
+
+class TestIndex(TestCase):
     def setUp(self):
         self.client = Client()
         self.index_url = reverse('core:index')
@@ -45,12 +91,83 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
     
+    # test that index view redirects to login page if user is not logged in
+    def test_index_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.index_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/')
+    
+    def test_index_POST(self):
+        response = self.client.post(self.index_url, {
+            'symbol': 'AAPL'
+            })
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/index.html')
+
+class TestBuy(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.index_url = reverse('core:index')
+        self.buy_url = reverse('core:buy')
+        self.sell_url = reverse('core:sell')
+        self.quote_url = reverse('core:quote')
+
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # login the user
+        self.client.login(username='testuser', password='testpass')
+    
     # test that buy view returns a 200 status code and uses the correct template on GET request with a logged in user
     def test_buy_GET(self):
         response = self.client.get(self.buy_url)
         
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/buy.html')
+    
+    # test that buy view redirects to login page if user is not logged in
+    def test_buy_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.buy_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/buy/')
+
+    # test that buy view returns a 200 status code and uses the correct template on POST request with a logged in user
+    def test_buy_POST(self):
+        response = self.client.post(self.buy_url, {
+            'symbol': 'AAPL',
+            'shares': 1
+            })
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/index.html')
+    
+    # test that buy view redirects back to buy page if symbol is invalid
+    def test_buy_POST_invalid(self):
+        response = self.client.post(self.buy_url, {
+            'symbol': 'INVALID',
+            'shares': 1
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/buy/')
+
+class Testsell(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.index_url = reverse('core:index')
+        self.sell_url = reverse('core:sell')
+
+        # create a user object
+        self.user = User.objects.create_user(username='testuser', password='testpass', role='STUDENT')
+        # login the user
+        self.client.login(username='testuser', password='testpass')
+
+        # create a holding object
+        self.holding = Holdings.objects.create(student=self.user.student, symbol='AAPL', quantity=1, purchase_price=1.00, )
         
     # test that sell view returns a 200 status code and uses the correct template on GET request with a logged in user
     def test_sell_GET(self):
@@ -59,10 +176,36 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/sell.html')
     
-    # test that quote view returns a 200 status code and uses the correct template on GET request with a logged in user
-    def test_quote_GET(self):
-        response = self.client.get(self.quote_url)
+    # test that sell view redirects to login page if user is not logged in
+    def test_sell_GET_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(self.sell_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/user/login/?next=/sell/')
+    
+    # test that sell view returns a 200 status code and uses the correct template on POST request with a logged in user
+    # and valid shares
+    def test_sell_POST(self):
+        response = self.client.post(self.sell_url, {
+            # pass in holding object pk as the form uses a model choice field
+            'holding': self.holding.pk,
+            'quantity': 1
+            })
         
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'core/quote.html')
+        self.assertTemplateUsed(response, 'core/index.html')
+        # check that holding object has been deleted
+        self.assertEquals(Holdings.objects.count(), 0)
+    
+    def test_sell_POST_invalid_shares(self):
+        response = self.client.post(self.sell_url, {
+            # pass in holding object pk as the form uses a model choice field
+            'holding': self.holding.pk,
+            'quantity': 200
+            })
         
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, '/sell/')
+        # check that holding object has not been deleted
+        self.assertEquals(Holdings.objects.count(), 1)

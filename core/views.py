@@ -116,6 +116,7 @@ def sell(request):
     if request.method == 'POST':
         form = SellForm(request.POST, request=request)
         if form.is_valid():
+            
             # Get the holding object.
             holding = form.cleaned_data['holding']
             quantity = form.cleaned_data['quantity']
@@ -139,6 +140,14 @@ def sell(request):
 
             # Get the price of the stock.
             price = lookup(symbol)
+
+            # Check if the api call was successful.
+            if price == "API LIMIT":
+                messages.error(request, 'API LIMIT.')
+                return redirect('core:sell')
+            elif price == "INVALID SYMBOL":
+                messages.error(request, 'Invalid symbol.')
+                return redirect('core:sell')
 
             # Update the student's balance. F is used to prevent race conditions.
             student.cash = F("cash") + (price * decimal.Decimal(quantity))
