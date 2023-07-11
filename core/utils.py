@@ -13,8 +13,12 @@ def lookup(symbol):
 
     quote = r.json()
 
+    print(quote)
+
     if r.status_code != 200:
         return "API LIMIT"
+    elif quote == {}:
+        return "INVALID SYMBOL"
     elif quote["Global Quote"] == {}:
         return "INVALID SYMBOL"
     

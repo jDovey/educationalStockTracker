@@ -138,3 +138,4 @@ class TestTeacherModel(TestCase):
     def test_teacher_is_deleted(self):
         self.user.delete()
         self.assertEquals(User.objects.count(), 0)
+

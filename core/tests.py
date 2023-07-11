@@ -216,6 +216,7 @@ class TestSell(TestCase):
         self.assertTemplateUsed(response, 'core/index.html')
         # check that holding object has been deleted
         self.assertEquals(Holdings.objects.count(), 0)
+        # check that transaction object has been created
         self.assertEquals(Transactions.objects.count(), 1)
     
     def test_sell_POST_invalid_shares(self):

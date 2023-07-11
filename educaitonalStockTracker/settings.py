@@ -92,7 +92,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'educaitonalStockTracker.wsgi.application'
 
 # !!!DO NOT DEPLOY, TESTING USE ONLY!!!
-DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB')
+# postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB
+DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgresql://localhost:5432/est_db')
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 # Database
