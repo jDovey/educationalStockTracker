@@ -57,7 +57,7 @@ def index(request):
         totalValue = sum([stock['totalValue'] for stock in stocks])
 
         if stocks:
-            student.total_value = totalValue + F("cash")
+            student.total_value = totalValue + student.cash
             student.save()
         return render(request, 'core/index.html', {'stocks': stocks})
 
