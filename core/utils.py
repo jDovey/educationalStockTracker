@@ -1,6 +1,9 @@
 import requests
 import os
 import decimal
+from bs4 import BeautifulSoup
+import chardet
+import lxml
 
 def lookup(symbol):
 
@@ -24,4 +27,16 @@ def lookup(symbol):
     
     price = quote["Global Quote"]["05. price"]
     price = price[:-2]
+    return decimal.Decimal(price)
+
+def lookup1(symbol):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}
+    url = "https://uk.finance.yahoo.com/quote/%s" % symbol
+
+    r = requests.get(url, headers=headers)
+
+    soup = BeautifulSoup(r.text, 'lxml')
+
+    price = soup.find('fin-streamer', {'class': "Fw(b) Fz(36px) Mb(-4px) D(ib)"}).text
+
     return decimal.Decimal(price)
