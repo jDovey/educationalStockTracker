@@ -102,9 +102,15 @@ def buy(request):
             transaction = Transactions(student=student, symbol=symbol, quantity=shares, purchase_price=price)
             transaction.save()
 
-
-            holding = Holdings(student=student, symbol=symbol, purchase_price=price, quantity=shares)
-            holding.save()
+            # check if the student already has a holding for this stock at this price point
+            if Holdings.objects.filter(student=student, symbol=symbol, purchase_price=price).exists():
+                # if so, update the holding
+                holding = Holdings.objects.get(student=student, symbol=symbol, purchase_price=price)
+                holding.quantity = F("quantity") + shares
+                holding.save()
+            else:
+                holding = Holdings(student=student, symbol=symbol, purchase_price=price, quantity=shares)
+                holding.save()
             
             messages.success(request, 'Successful transaction! %s %s share(s) at $%s per share.' % (shares, symbol, price))
             return render(request, 'core/index.html')
@@ -193,6 +199,7 @@ def quote(request):
     
     preSymbol = request.GET.get('symbol', '')
     form = QuoteForm()
+    
     return render(request, 'core/quote.html', {
         'form': form,
         'preSymbol': preSymbol,

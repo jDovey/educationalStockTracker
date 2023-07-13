@@ -28,4 +28,4 @@ class Holdings(models.Model):
         ordering = ['symbol']
     
     def __str__(self):
-        return f'{self.quantity} | {self.symbol} (${self.purchase_price})'
+        return f'{self.quantity} | {self.symbol} (${self.purchase_price}) | {self.student}'
