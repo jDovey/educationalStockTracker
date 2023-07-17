@@ -39,6 +39,7 @@ class TestIndex(TestCase):
         self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
         self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
     
+    # test that the index page redirects to the correct page based on the user's role
     def test_index_AS_STUDENT_GET(self):
         self.client.login(username='teststudent', password='testpass')
         response = self.client.get(self.index_url)
@@ -46,6 +47,7 @@ class TestIndex(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('classroom:student'))
     
+    # test that the index page redirects to the correct page based on the user's role
     def test_index_AS_TEACHER_GET(self):
         self.client.login(username='testteacher', password='testpass')
         response = self.client.get(self.index_url)
@@ -63,6 +65,7 @@ class TestStudent(TestCase):
         self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
         self.classID = Classroom.objects.get(name='testclassroom').id
     
+    # test that a student without a classroom will go to the student page
     def test_student_GET(self):
         self.client.login(username='teststudent', password='testpass')
         response = self.client.get(self.student_url)
@@ -70,19 +73,34 @@ class TestStudent(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'classroom/student.html')
     
+    # test that a student with a classroom will go to the classroom page
+    def test_student_GET_with_classroom(self):
+        # add the classroom to the student
+        self.studentUser.student.classroom = self.classroom
+        self.studentUser.student.save()
+        
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(self.student_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:studentClassroom', args=[self.classID]))
+    
+    # test that a teacher will be redirected to the teacher page
     def test_student_GET_as_teacher(self):
         self.client.login(username='testteacher', password='testpass')
         response = self.client.get(self.student_url)
         
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('classroom:teacher'))
-        
+    
+    # test that a user who is not logged in will be redirected to the login page
     def test_student_GET_not_logged_in(self):
         response = self.client.get(self.student_url)
         
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('user:login') + '?next=' + self.student_url)
-        
+    
+    # test that a student can join a valid classroom with the correct passcode
     def test_student_POST_valid_classroom(self):
         self.client.login(username='teststudent', password='testpass')
         response = self.client.post(self.student_url, {
@@ -92,12 +110,24 @@ class TestStudent(TestCase):
         
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('classroom:studentClassroom', args=[self.classID]))
-        
-    def test_student_POST_invalid_classroom(self):
+    
+    # test that a student cannot join a valid classroom with the incorrect passcode
+    def test_student_POST_invalid_passcode(self):
         self.client.login(username='teststudent', password='testpass')
         response = self.client.post(self.student_url, {
             'name': 'testclassroom',
             'passcode': 'wrongpasscode'
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:student'))
+    
+    # test that a student cannot join an invalid classroom
+    def test_student_POST_invalid_classroom(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.post(self.student_url, {
+            'name': 'wrongclassroom',
+            'passcode': 'testpasscode'
             })
         
         self.assertEquals(response.status_code, 302)
@@ -112,6 +142,7 @@ class TestTeacher(TestCase):
         self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
         self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
     
+    # test that a teacher will go to the teacher page
     def test_teacher_GET(self):
         self.client.login(username='testteacher', password='testpass')
         response = self.client.get(self.teacher_url)
@@ -119,6 +150,7 @@ class TestTeacher(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'classroom/teacher.html')
     
+    # test that a student will be redirected to the student page
     def test_teacher_GET_as_student(self):
         self.client.login(username='teststudent', password='testpass')
         response = self.client.get(self.teacher_url)
@@ -126,6 +158,7 @@ class TestTeacher(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('core:index'))
     
+    # test that a user who is not logged in will be redirected to the login page
     def test_teacher_GET_not_logged_in(self):
         response = self.client.get(self.teacher_url)
         
