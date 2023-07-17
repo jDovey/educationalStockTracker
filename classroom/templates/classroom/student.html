@@ -4,4 +4,20 @@
     
 {% block content %}
     <h1>Classroom</h1>
+
+    <div>
+        <form action="." method="post">
+            <div class="form-group"></div>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <!-- Display any form errors -->
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p style="color: red">{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <button class="m-3 btn btn-primary" type="submit">Join</button>
+        </form>
+    </div>
 {% endblock %}

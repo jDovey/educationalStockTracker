@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import chardet
 import lxml
 
-def lookup1(symbol):
+def lookup(symbol):
     # check if symbol contains a non alphabet character
     if not symbol.isalpha():
         return "INVALID SYMBOL"
@@ -27,7 +27,7 @@ def lookup1(symbol):
     return decimal.Decimal(price)
 
 # web scraping NOT USED
-def lookup(symbol):
+def lookup1(symbol):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}
     url = "https://uk.finance.yahoo.com/quote/%s" % symbol
 

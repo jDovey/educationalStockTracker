@@ -8,14 +8,12 @@
         <thead>
             <tr>
                 <th>Class Name</th>
-                <th>Class Code</th>
             </tr>
         </thead>
         <tbody>
             {% for classroom in teacher_classrooms %}
                 <tr>
                     <td><a href="{% url 'classroom:teacherClassroom' classroom.id %}">{{ classroom.name }}</a></td>
-                    <td>{{ classroom.passcode }}</td>
                 </tr>
             {% endfor %}
         </tbody>

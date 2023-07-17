@@ -14,6 +14,9 @@ import decimal
 # Create your views here.
 @login_required
 def index(request):
+    # redirect teachers to the classroom page
+    if request.user.role == 'TEACHER':
+        return redirect('classroom:teacher')
     if request.method == 'POST':
         # Get the student object.
         student = get_object_or_404(Student, user=request.user)

@@ -50,13 +50,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'debug_toolbar',
+    'debug_toolbar', # new
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user',
-    'core',
-    'classroom',
+    'user', # new
+    'core', # new
+    'classroom', # new
 ]
 
 MIDDLEWARE = [

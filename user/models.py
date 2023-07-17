@@ -30,7 +30,7 @@ class Student(models.Model):
     cash = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     total_value = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     xp = models.IntegerField(default=0)
-    classroom = models.ForeignKey('classroom.Classroom', on_delete=models.CASCADE, null=True)
+    classroom = models.ForeignKey('classroom.Classroom', on_delete=models.SET_NULL, null=True)
     
     def __str__(self):
         return self.user.username

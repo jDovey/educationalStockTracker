@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Classroom{% endblock %}
+    
+{% block content %}
+    <h1>{{ classroom.name }}</h1>
+    <h2>{{ classroom.teacher.user.username }}</h2>
+
+    <table class="table table-striped table-dark table-hover styled-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Overall Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in classroomStudents %}
+            {% if student.user.username == request.user.username %}
+            <tr class="active-row">
+            {% else %}
+            <tr>
+            {% endif %}
+                <td>{{ student.user.username }}</td>
+                <td>${{ student.total_value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
