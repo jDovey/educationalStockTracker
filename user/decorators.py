@@ -9,6 +9,9 @@ def allowed_users(allowed_roles=[]):
                 return view_func(request, *args, **kwargs)
             else:
                 messages.error(request, 'You are not authorized to view this page.')
+                if request.user.role == "TEACHER":
+                    return redirect('classroom:teacher')
+                
                 return redirect('core:index')
         return wrapper_func
     return decorator

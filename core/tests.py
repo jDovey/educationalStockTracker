@@ -59,7 +59,7 @@ class TestQuote(TestCase):
         response = self.client.get(self.quote_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/quote/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.quote_url)
 
     # test that quote view returns a 200 status code and uses the correct template on POST request with a logged in user
     def test_quote_POST(self):
@@ -105,7 +105,7 @@ class TestIndex(TestCase):
         response = self.client.get(self.index_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.index_url)
     
     # test that index view returns a 200 status code and uses the correct template on POST request with a logged in user
     def test_index_POST(self):
@@ -140,7 +140,7 @@ class TestBuy(TestCase):
         response = self.client.get(self.buy_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/buy/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.buy_url)
 
     # test that buy view returns a 200 status code and uses the correct template on POST request with a logged in user
     def test_buy_POST(self):
@@ -201,7 +201,7 @@ class TestSell(TestCase):
         response = self.client.get(self.sell_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/sell/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.sell_url)
     
     # test that sell view returns a 200 status code and uses the correct template on POST request with a logged in user
     # and valid shares
@@ -261,7 +261,7 @@ class TestHistory(TestCase):
         response = self.client.get(self.history_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/history/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.history_url)
 
 class TestLeaderboard(TestCase):
     def setUp(self):
@@ -292,7 +292,7 @@ class TestLeaderboard(TestCase):
         response = self.client.get(self.leaderboard_url)
         
         self.assertEquals(response.status_code, 302)
-        self.assertRedirects(response, '/user/login/?next=/leaderboard/')
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.leaderboard_url)
 
 class TestHoldingsModel(TestCase):
     def setUp(self):

@@ -10,6 +10,7 @@ from .forms import NewClassroomForm, JoinClassroomForm
 # Create your views here.
 
 @login_required
+@allowed_users(allowed_roles=['STUDENT', 'TEACHER'])
 def index(request):
     if request.user.role == 'STUDENT':
         return redirect('classroom:student')
@@ -25,18 +26,25 @@ def student(request):
     if request.method == 'POST':
         form = JoinClassroomForm(request.POST)
         if form.is_valid():
-            classroom = Classroom.objects.get(name=form.cleaned_data['name'])
-            passcode = form.cleaned_data['passcode']
             
-            print(passcode, classroom.passcode)
+            try:
+                classroom = Classroom.objects.get(name=form.cleaned_data['name'])
+            except Classroom.DoesNotExist:
+                messages.error(request, 'The classroom you entered does not exist.')
+                return redirect('classroom:student')
+            
+            passcode = form.cleaned_data['passcode']
             if classroom.passcode == passcode:
                 student = request.user.student
                 student.classroom = classroom
                 student.save()
                 successMessage = "You have successfully joined %s's classroom." % classroom.teacher.user.username
-                messages.success(request, 'You have successfully joined the classroom.')
+                messages.success(request, successMessage)
                 
                 return redirect('classroom:studentClassroom', classroom_id=classroom.id)
+            else:
+                messages.error(request, 'The passcode you entered is incorrect.')
+                return redirect('classroom:student')
     form = JoinClassroomForm()
     return render(request, 'classroom/student.html', {
         'form': form
