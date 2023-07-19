@@ -72,9 +72,9 @@ def buy(request):
     if request.method == 'POST':
         form = BuyForm(request.POST)
         if form.is_valid():
-            symbol = form.cleaned_data['symbol']
+            symbol = form.cleaned_data['symbol'].upper()
             shares = form.cleaned_data['shares']
-
+            
             # Call lookup function from utils.py, the api call is made here.
             price = lookup(symbol)
 
@@ -182,7 +182,7 @@ def quote(request):
     if request.method == 'POST':
         form = QuoteForm(request.POST)
         if form.is_valid():
-            symbol = form.cleaned_data['symbol']
+            symbol = form.cleaned_data['symbol'].upper()
 
             price = lookup(symbol)
 
