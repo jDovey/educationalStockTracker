@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import Classroom
+from user.models import Student
 
 class NewClassroomForm(forms.ModelForm):
     class Meta:
@@ -31,3 +32,17 @@ class JoinClassroomForm(forms.Form):
         'placeholder': 'Passcode',
     }))
     
+class EditStudentForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ('cash', 'xp')
+        
+    cash = forms.DecimalField(max_digits=10, decimal_places=2, widget=forms.NumberInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Cash',
+    }))
+    
+    xp = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'XP',
+    }))

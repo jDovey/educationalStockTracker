@@ -16,14 +16,10 @@
             <label class="inline-block mb-2">Password:</label><br>
             {{ form.password }}
         </div>
-        <button class="btn btn-primary">Login</button>
-        {% if form.errors or form.non_field_errors %}
-        {% for field in form %}
-            {% for error in field.errors %}
-                <p style="color: red">{{ error }}</p>
-            {% endfor %}
+        {% for error in form.non_field_errors %}
+            <p style="color: red">{{ error }}</p>
         {% endfor %}
-        {% endif %}
+        <button class="btn btn-primary">Login</button>
     </form>
     <p>Don't have an account? <a href="{% url 'user:register' %}">Register</a></p>
 </div>

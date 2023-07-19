@@ -5,7 +5,7 @@ from django.contrib import messages
 from user.models import Student
 from .models import Classroom
 from user.decorators import allowed_users
-from .forms import NewClassroomForm, JoinClassroomForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm
 
 # Create your views here.
 
@@ -87,7 +87,7 @@ def teacherClassroom(request, classroom_id):
     if classroom.teacher != request.user.teacher:
         messages.error(request, 'You do not have permission to view this classroom.')
         return redirect('classroom:teacher')
-    classroomStudents = Student.objects.filter(classroom=classroom)
+    classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
     return render(request, 'classroom/teacherClassroom.html', {
         'classroom': classroom,
         'classroomStudents': classroomStudents,
@@ -103,3 +103,39 @@ def studentClassroom(request, classroom_id):
         'classroom': classroom,
         'classroomStudents': classroomStudents,
         })
+    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def editStudent(request, student_id):
+    student = Student.objects.get(user_id=student_id)
+    if student.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to edit this student.')
+        return redirect('classroom:teacher')
+    
+    if request.method == 'POST':
+        form = EditStudentForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect('classroom:teacherClassroom', classroom_id=student.classroom.id)
+    form = EditStudentForm(instance=student)
+    return render(request, 'classroom/editStudent.html', {
+        'form': form,
+        'student': student,
+        })
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def removeStudent(request, student_id):
+    student = Student.objects.get(user_id=student_id)
+    classroom_id = student.classroom.id
+    if student.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to remove this student.')
+        return redirect('classroom:teacher')
+    
+    
+    student.classroom = None
+    student.save()
+    messages.success(request, 'You have successfully removed %s from your classroom.' % student.user.username)
+    return redirect('classroom:teacherClassroom', classroom_id)
+    
+    
