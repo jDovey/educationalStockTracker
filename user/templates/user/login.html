@@ -17,6 +17,13 @@
             {{ form.password }}
         </div>
         <button class="btn btn-primary">Login</button>
+        {% if form.errors or form.non_field_errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p style="color: red">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        {% endif %}
     </form>
     <p>Don't have an account? <a href="{% url 'user:register' %}">Register</a></p>
 </div>

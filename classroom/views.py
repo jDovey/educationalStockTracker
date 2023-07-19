@@ -69,7 +69,12 @@ def newClassroom(request):
             classroom.teacher = request.user.teacher
             classroom.save()
             
-            return redirect('classroom:teacher')
+            return redirect('classroom:teacherClassroom', classroom_id=classroom.id)
+        else:
+            return render(request, 'classroom/newClassroom.html', {
+                'form': form,
+            })
+            
     form = NewClassroomForm()
     return render(request, 'classroom/newClassroom.html', {
         'form': form,

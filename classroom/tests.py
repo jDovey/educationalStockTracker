@@ -172,3 +172,48 @@ class TestNewClassroom(TestCase):
         
         self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
         self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+    
+    # test that the correct template is used when the page is loaded
+    def test_newClassroom_GET(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(self.newClassroom_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/newClassroom.html')
+    
+    # test that a student will be redirected to the student page
+    def test_newClassroom_GET_as_student(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(self.newClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('core:index'))
+        
+    # test that the view returns a 200 status code when a teacher creates a new classroom
+    def test_newClassroom_POST(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.post(self.newClassroom_url, {
+            'name': 'testclassroom',
+            'passcode': 'testpasscode'
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(Classroom.objects.count(), 1)
+        self.assertRedirects(response, reverse('classroom:teacherClassroom', args=[1]))
+        
+    # test that the view does not allow duplicate classroom names
+    def test_newClassroom_POST_duplicate_name(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.post(self.newClassroom_url, {
+            'name': 'testclassroom',
+            'passcode': 'testpasscode'
+            })
+        response = self.client.post(self.newClassroom_url, {
+            'name': 'testclassroom',
+            'passcode': 'testpasscode'
+            })
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(Classroom.objects.count(), 1)
+        self.assertTemplateUsed(response, 'classroom/newClassroom.html')
+    

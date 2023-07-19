@@ -21,6 +21,8 @@ def register(request):
             
             elif role == 'TEACHER':
                 return redirect('user:login')
+        else:
+            return render(request, 'user/register.html', {'form': form})
 
     form = RegisterForm()
         
