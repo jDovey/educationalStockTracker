@@ -23,8 +23,10 @@
             <td>{{ student.user.username }}</td>
             <td>${{ student.total_value }}</td>
             <td>
-                <a href="{% url 'classroom:editStudent' student.user_id %}" class="btn btn-outline-warning" title="Edit student"><i class="material-symbols-outlined">edit</i></a>
-                <a href="{% url 'classroom:removeStudent' student.user_id %}" class="btn btn-outline-danger" title="Remove student" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                <a href="{% url 'classroom:editStudent' student.user_id %}" class="btn btn-outline-warning btn-sm" title="Edit student"><i class="material-symbols-outlined">edit</i></a>
+                <a href="{% url 'classroom:removeStudent' student.user_id %}" class="btn btn-outline-danger btn-sm" title="Remove student" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
+            </div>
             </td>
         </tr>
         {% endfor %}
