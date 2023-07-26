@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import F, Sum
 
+from django.core.cache import cache
+
 from .utils import lookup
 from user.decorators import allowed_users
 from .forms import QuoteForm, BuyForm, SellForm
@@ -18,30 +20,39 @@ def index(request):
     if request.user.role == 'TEACHER':
         return redirect('classroom:teacher')
     if request.method == 'POST':
-        # Get the student object.
-        student = get_object_or_404(Student, user=request.user)
+
+        # check cache first
+        if cache.get(request.user):
+            student = cache.get(request.user)
+        else:
+            # Get the student object.
+            student = get_object_or_404(Student, user=request.user)
+            cache.set(request.user, student, timeout=60*60*24)
         # get the holdings of the student and group the holdings by symbol and purchase price
         holdings = Holdings.objects.filter(student=student).values('symbol', 'purchase_price').annotate(quantity=Sum('quantity'))
 
         
         stocks = []
-        prices = {}
         for holding in holdings:
-            # Call lookup function from utils.py, the api call is made here.
-            if holding['symbol'] not in prices:
+            # check if holding is in cache
+            # caching the price prevents repeat api calls, significantly improving performance
+            if cache.get(holding['symbol']):
+                price = cache.get(holding['symbol'])
+            else:
+                # Call lookup function from utils.py, the api call is made here.
                 price = lookup(holding['symbol'])
-                prices[holding['symbol']] = price
+                cache.set(holding['symbol'], price, timeout=60)
             
-            # Check if the api call was successful.
-            if prices[holding['symbol']] == "API LIMIT":
-                messages.error(request, 'API LIMIT.')
-                return redirect('core:index')
-            elif prices[holding['symbol']] == "INVALID SYMBOL":
-                messages.error(request, 'Invalid symbol.')
-                return redirect('core:index')
+                # Check if the api call was successful.
+                if price == "API LIMIT":
+                    messages.error(request, 'API LIMIT.')
+                    return redirect('core:index')
+                elif price == "INVALID SYMBOL":
+                    messages.error(request, 'Invalid symbol.')
+                    return redirect('core:index')
             
             # Calculate the total value of the stock.
-            totalValue = prices[holding['symbol']] * decimal.Decimal(holding['quantity'])
+            totalValue = price * decimal.Decimal(holding['quantity'])
             totalPurchasePrice = holding['purchase_price'] * (holding['quantity'])
             # Calculate the profit/loss of the stock.
             profitLoss = totalValue - totalPurchasePrice
@@ -51,7 +62,7 @@ def index(request):
                 'symbol': holding['symbol'],
                 'total_quantity': holding['quantity'],
                 'purchase_price': holding['purchase_price'],
-                'price': prices[holding['symbol']],
+                'price': price,
                 'totalValue': totalValue,
                 'profitLoss': profitLoss,
                 })
