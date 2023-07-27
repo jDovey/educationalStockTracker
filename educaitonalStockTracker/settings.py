@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'educaitonalStockTracker.wsgi.application'
 DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB')
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-# Database
+# Database 
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
@@ -109,6 +109,14 @@ DATABASES = {
         default=DATABASE_URL,
         conn_max_age=600
     )
+}
+
+# redis cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
 }
 
 
