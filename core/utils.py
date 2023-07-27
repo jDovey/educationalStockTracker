@@ -6,7 +6,7 @@ import chardet
 import lxml
 
 # API call to get stock price
-def lookup1(symbol):
+def lookup(symbol):
     # check if symbol contains a non alphabet character
     if not symbol.isalpha():
         return "INVALID SYMBOL"
@@ -28,7 +28,7 @@ def lookup1(symbol):
     return decimal.Decimal(price)
 
 # web scraping to get stock price
-def lookup(symbol):
+def lookup1(symbol):
     # check if symbol contains a non alphabet character
     if not symbol.isalpha():
         return "INVALID SYMBOL"

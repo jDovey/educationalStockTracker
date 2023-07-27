@@ -41,8 +41,6 @@ def index(request):
             else:
                 # Call lookup function from utils.py, the api call is made here.
                 price = lookup(holding['symbol'])
-                cache.set(holding['symbol'], price, timeout=60)
-            
                 # Check if the api call was successful.
                 if price == "API LIMIT":
                     messages.error(request, 'API LIMIT.')
@@ -50,6 +48,11 @@ def index(request):
                 elif price == "INVALID SYMBOL":
                     messages.error(request, 'Invalid symbol.')
                     return redirect('core:index')
+                
+                # add price to cache, setting to timeout to 24 hours
+                cache.set(holding['symbol'], price, timeout=60*60*24)
+            
+                
             
             # Calculate the total value of the stock.
             totalValue = price * decimal.Decimal(holding['quantity'])
@@ -86,16 +89,22 @@ def buy(request):
             symbol = form.cleaned_data['symbol'].upper()
             shares = form.cleaned_data['shares']
             
-            # Call lookup function from utils.py, the api call is made here.
-            price = lookup(symbol)
+            if cache.get(symbol):
+                price = cache.get(symbol)
+            else:
+                # Call lookup function from utils.py, the api call is made here.
+                price = lookup(symbol)
+                # Check if the api call was successful.
+                if price == "API LIMIT":
+                    messages.error(request, 'API LIMIT.')
+                    return redirect('core:buy')
+                elif price == "INVALID SYMBOL":
+                    messages.error(request, 'Invalid symbol.')
+                    return redirect('core:buy')
+                
+                cache.set(symbol, price, timeout=60*60*24)
 
-            # Check if the api call was successful.
-            if price == "API LIMIT":
-                messages.error(request, 'API LIMIT.')
-                return redirect('core:buy')
-            elif price == "INVALID SYMBOL":
-                messages.error(request, 'Invalid symbol.')
-                return redirect('core:buy')
+            
 
             totalCost = price * decimal.Decimal(shares)
             
@@ -195,15 +204,22 @@ def quote(request):
         if form.is_valid():
             symbol = form.cleaned_data['symbol'].upper()
 
-            price = lookup(symbol)
+            if cache.get(symbol):
+                price = cache.get(symbol)
+            else:
+                # Call lookup function from utils.py, the api call is made here.
+                price = lookup(symbol)
+                # Check if the api call was successful.
+                if price == "API LIMIT":
+                    messages.error(request, 'API LIMIT.')
+                    return redirect('core:quote')
+                elif price == "INVALID SYMBOL":
+                    messages.error(request, 'Invalid symbol.')
+                    return redirect('core:quote')
+                
+                cache.set(symbol, price, timeout=60*60*24)
 
-            # Check if the api call was successful.
-            if price == "API LIMIT":
-                messages.error(request, 'API LIMIT.')
-                return redirect('core:quote')
-            elif price == "INVALID SYMBOL":
-                messages.error(request, 'Invalid symbol.')
-                return redirect('core:quote')
+                
 
         symbol = symbol.upper()
         return render(request, 'core/price.html', {
