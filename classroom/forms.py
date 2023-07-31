@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Classroom
+from .models import Classroom, Lesson
 from user.models import Student
 
 class NewClassroomForm(forms.ModelForm):
@@ -45,4 +45,34 @@ class EditStudentForm(forms.ModelForm):
     xp = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': 'form-control',
         'placeholder': 'XP',
+    }))
+    
+class NewLessonForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ('status', 'order', 'title', 'short_description', 'long_description')
+    
+    status = forms.ChoiceField(choices=Lesson.Status.choices, widget=forms.Select(attrs={
+        'class': 'form-control',
+        'placeholder': 'Status',
+    }))
+    
+    order = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Order',
+    }))
+    
+    title = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Title',
+    }))
+    
+    short_description = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Short description',
+    }))
+    
+    long_description = forms.CharField(widget=forms.Textarea(attrs={
+        'class': 'form-control',
+        'placeholder': 'Long description',
     }))

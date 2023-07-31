@@ -3,9 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from user.models import Student
-from .models import Classroom
+from .models import Classroom, Lesson
 from user.decorators import allowed_users
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, NewLessonForm
 
 # Create your views here.
 
@@ -88,9 +88,12 @@ def teacherClassroom(request, classroom_id):
         messages.error(request, 'You do not have permission to view this classroom.')
         return redirect('classroom:teacher')
     classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
+    # get the lessons in the classroom order by their order
+    classroomLessons = Lesson.objects.filter(classroom=classroom).order_by('order')
     return render(request, 'classroom/teacherClassroom.html', {
         'classroom': classroom,
         'classroomStudents': classroomStudents,
+        'classroomLessons': classroomLessons,
         })
     
 @login_required
@@ -138,4 +141,26 @@ def removeStudent(request, student_id):
     messages.success(request, 'You have successfully removed %s from your classroom.' % student.user.username)
     return redirect('classroom:teacherClassroom', classroom_id)
     
-    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def newLesson(request, classroom_id):
+    if request.method == 'POST':
+        form = NewLessonForm(request.POST)
+        if form.is_valid():
+            # save the lesson without committing to the database
+            lesson = form.save(commit=False)
+            # this allows us to add the teacher to the lesson
+            lesson.teacher = request.user.teacher
+            lesson.classroom = Classroom.objects.get(id=classroom_id)
+            lesson.save()
+            
+            return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+        else:
+            return render(request, 'classroom/newLesson.html', {
+                'form': form,
+            })
+            
+    form = NewLessonForm()
+    return render(request, 'classroom/newLesson.html', {
+        'form': form,
+        })

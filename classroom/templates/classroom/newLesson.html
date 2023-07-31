@@ -1,0 +1,40 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Classroom{% endblock %}
+    
+{% block content %}
+<div>
+    <form action="." method="post">
+        <div class="form-group"></div>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="inline-block mb-2">Status:</label><br>
+                {{ form.status }}
+            </div>
+            <div class="mb-3">
+                <label class="inline-block mb-2">Order:</label><br>
+                {{ form.order }}
+            </div>
+            <div class="mb-3">
+                <label class="inline-block mb-2">Title:</label><br>
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                <label class="inline-block mb-2">Short Description:</label><br>
+                {{ form.short_description }}
+            </div>
+            <div class="mb-3">
+                <label class="inline-block mb-2">Long Description:</label><br>
+                {{ form.long_description }}
+            </div>
+            <!-- Display any form errors -->
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <button class="m-3 btn btn-primary" type="submit">Create</button>
+    </form>
+</div>
+{% endblock %}
