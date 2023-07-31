@@ -84,6 +84,7 @@ def newClassroom(request):
 @allowed_users(allowed_roles=['TEACHER'])
 def teacherClassroom(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
+    # check if the classroom belongs to the teacher
     if classroom.teacher != request.user.teacher:
         messages.error(request, 'You do not have permission to view this classroom.')
         return redirect('classroom:teacher')
@@ -100,6 +101,10 @@ def teacherClassroom(request, classroom_id):
 @allowed_users(allowed_roles=['STUDENT'])
 def studentClassroom(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
+    # check if the classroom belongs to the student
+    if classroom != request.user.student.classroom:
+        messages.error(request, 'You do not have permission to view this classroom.')
+        return redirect('classroom:student')
     # get the students in the classroom order by their total_value
     classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
     return render(request, 'classroom/studentClassroom.html', {
@@ -144,23 +149,31 @@ def removeStudent(request, student_id):
 @login_required
 @allowed_users(allowed_roles=['TEACHER'])
 def newLesson(request, classroom_id):
+    classroom = Classroom.objects.get(id=classroom_id)
     if request.method == 'POST':
         form = NewLessonForm(request.POST)
         if form.is_valid():
-            # save the lesson without committing to the database
-            lesson = form.save(commit=False)
-            # this allows us to add the teacher to the lesson
-            lesson.teacher = request.user.teacher
-            lesson.classroom = Classroom.objects.get(id=classroom_id)
-            lesson.save()
+            # check if the order and classroom combination already exists
+            if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists():
+                messages.error(request, 'A lesson with that order already exists.')
+            else:
+                # save the lesson without committing to the database
+                lesson = form.save(commit=False)
+                # this allows us to add the teacher to the lesson
+                lesson.teacher = request.user.teacher
+                lesson.classroom = classroom
+                lesson.save()
+                
+                return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
             
-            return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
-        else:
             return render(request, 'classroom/newLesson.html', {
                 'form': form,
+                'classroom': classroom,
+                
             })
             
     form = NewLessonForm()
     return render(request, 'classroom/newLesson.html', {
         'form': form,
+        'classroom': classroom,
         })

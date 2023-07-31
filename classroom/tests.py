@@ -189,6 +189,13 @@ class TestNewClassroom(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('core:index'))
         
+    # test that a user who is not logged in will be redirected to the login page
+    def test_newClassroom_GET_not_logged_in(self):
+        response = self.client.get(self.newClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.newClassroom_url)
+        
     # test that the view returns a 200 status code when a teacher creates a new classroom
     def test_newClassroom_POST(self):
         self.client.login(username='testteacher', password='testpass')
@@ -217,3 +224,96 @@ class TestNewClassroom(TestCase):
         self.assertEquals(Classroom.objects.count(), 1)
         self.assertTemplateUsed(response, 'classroom/newClassroom.html')
     
+class TestTeacherClassroom(TestCase):
+    def setUp(self):
+        self.client = Client()
+        
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
+        self.teacherClassroom_url = reverse('classroom:teacherClassroom', args=[self.classroom.id])
+        
+    # test that the correct template is used when the page is loaded
+    def test_teacherClassroom_GET(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(self.teacherClassroom_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/teacherClassroom.html')
+    
+    # test that a student will be redirected to the student page
+    def test_teacherClassroom_GET_as_student(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(self.teacherClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('core:index'))
+    
+    # test that a user who is not logged in will be redirected to the login page
+    def test_teacherClassroom_GET_not_logged_in(self):
+        response = self.client.get(self.teacherClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.teacherClassroom_url)
+    
+    # test that a teacher cannot access a classroom that they do not own
+    def test_teacherClassroom_GET_not_owner(self):
+        # create a new teacher
+        User.objects.create_user(username='testteacher2', password='testpass', role='TEACHER').teacher
+        
+        # login as the new teacher
+        self.client.login(username='testteacher2', password='testpass')
+        response = self.client.get(self.teacherClassroom_url)
+        
+        # teacher should be redirected to the teacher page as they do not own the classroom
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:teacher'))
+        
+class TestStudentClassroom(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.studentClassroom_url = reverse('classroom:studentClassroom', args=[self.classroom.id])
+        
+    # test that the correct template is used when the page is loaded
+    def test_studentClassroom_GET(self):
+        # add the classroom to the student
+        self.studentUser.student.classroom = self.classroom
+        self.studentUser.student.save()
+        
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(self.studentClassroom_url)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/studentClassroom.html')
+    
+    # test that a teacher will be redirected to the teacher page
+    def test_studentClassroom_GET_as_teacher(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(self.studentClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:teacher'))
+    
+    # test that a user who is not logged in will be redirected to the login page
+    def test_studentClassroom_GET_not_logged_in(self):
+        response = self.client.get(self.studentClassroom_url)
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + self.studentClassroom_url)
+        
+    # test that a student cannot access a classroom that they do not belong to
+    def test_studentClassroom_GET_not_in_classroom(self):
+        # create a new student
+        User.objects.create_user(username='teststudent2', password='testpass', role='STUDENT').student
+        
+        # login as the new student
+        self.client.login(username='teststudent2', password='testpass')
+        response = self.client.get(self.studentClassroom_url)
+        
+        # student should be redirected to the student page as they do not belong to the classroom
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:student'))
