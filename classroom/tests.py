@@ -1,7 +1,7 @@
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
-from .views import index, student, teacher, newClassroom, teacherClassroom, studentClassroom
+from .views import index, student, teacher, newClassroom, teacherClassroom, studentClassroom, editStudent, removeStudent, newLesson, editLesson, deleteLesson, viewLesson
 from user.models import User, Student, Teacher
 from .models import Classroom, Lesson
 
@@ -30,6 +30,31 @@ class TestUrls(SimpleTestCase):
     def test_studentClassroom_url(self):
         url = reverse('classroom:studentClassroom', args=[1])
         self.assertEquals(resolve(url).func, studentClassroom)
+    
+    def test_editStudent_url(self):
+        url = reverse('classroom:editStudent', args=[1])
+        self.assertEquals(resolve(url).func, editStudent)
+    
+    def test_removeStudent_url(self):
+        url = reverse('classroom:removeStudent', args=[1])
+        self.assertEquals(resolve(url).func, removeStudent)
+    
+    def test_newLesson_url(self):
+        url = reverse('classroom:newLesson', args=[1])
+        self.assertEquals(resolve(url).func, newLesson)
+    
+    def test_editLesson_url(self):
+        url = reverse('classroom:editLesson', args=[1, 1])
+        self.assertEquals(resolve(url).func, editLesson)
+    
+    def test_deleteLesson_url(self):
+        url = reverse('classroom:deleteLesson', args=[1, 1])
+        self.assertEquals(resolve(url).func, deleteLesson)
+        
+    def test_viewLesson_url(self):
+        url = reverse('classroom:viewLesson', args=[1, 1])
+        self.assertEquals(resolve(url).func, viewLesson)
+        
         
 class TestIndex(TestCase):
     def setUp(self):

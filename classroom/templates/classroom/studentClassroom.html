@@ -27,9 +27,16 @@
         </tbody>
     </table>
     <h2>Lessons</h2>
-    <div class="list-group">
+    <div class="d-grid gap-2 d-md-flex justify-content-center">
+    <ol class="list-group list-group-numbered">
         {% for lesson in classroomLessons %}
-        <a href="{% url 'classroom:viewLesson' classroom.id lesson.id %}" class="list-group-item list-group-item-action">{{ lesson.title }}</a>
+        <li class="list-group-item d-flex justify-content-center">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold"><a href="{% url 'classroom:viewLesson' classroom.id lesson.id %}"><strong>{{ lesson.title }}</strong></a></div>
+            {{ lesson.description }}
+          </div>
+        </li>
         {% endfor %}
+    </ol>
     </div>
 {% endblock %}

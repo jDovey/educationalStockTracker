@@ -3,14 +3,21 @@
 {% block title %}{{ lesson.title }}{% endblock %}
     
 {% block content %}
-    <h1>{{ lesson.title }}</h1>
-    <p>{{ lesson.description }}</p>
-    <p>{{ lesson.content }}</p>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid">
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>{{ lesson.title }}</h1>
+            <p><strong>{{ lesson.description }}</strong></p>
+            <p>{{ lesson.content }}</p>
+        </div>
+        <div class="col-6 col-md-4">
+            {% if lesson.image %}
+                <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid rounded" style="height: 10rem; width: 10rem;">
+            {% endif %}
+            <div class="row">
+                <button class="btn btn-primary btn-block mt-2">Take Quiz</button>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
