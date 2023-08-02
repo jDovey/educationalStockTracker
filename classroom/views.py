@@ -154,7 +154,7 @@ def removeStudent(request, student_id):
 def newLesson(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
     if request.method == 'POST':
-        form = LessonForm(request.POST)
+        form = LessonForm(request.POST, request.FILES)
         if form.is_valid():
             # check if the order and classroom combination already exists
             if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists():
@@ -191,7 +191,7 @@ def editLesson(request, classroom_id, lesson_id):
         return redirect('classroom:teacher')
     
     if request.method == 'POST':
-        form = LessonForm(request.POST, instance=lesson)
+        form = LessonForm(request.POST, request.FILES, instance=lesson)
         if form.is_valid():
             notOriginal = False
             # check if order is in changed data
@@ -213,7 +213,6 @@ def editLesson(request, classroom_id, lesson_id):
 @login_required
 @allowed_users(allowed_roles=['TEACHER'])
 def deleteLesson(request, classroom_id, lesson_id):
-    classroom = Classroom.objects.get(id=classroom_id)
     lesson = Lesson.objects.get(id=lesson_id)
     if lesson.classroom.teacher != request.user.teacher:
         messages.error(request, 'You do not have permission to delete this lesson.')
@@ -221,3 +220,17 @@ def deleteLesson(request, classroom_id, lesson_id):
     
     lesson.delete()
     return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def viewLesson(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    if lesson.classroom != request.user.student.classroom:
+        messages.error(request, 'You do not have permission to view this lesson.')
+        return redirect('classroom:student')
+    
+    return render(request, 'classroom/viewLesson.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        })

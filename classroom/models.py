@@ -25,8 +25,9 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField(default = 0, blank = False, null = False)
     classroom = models.ForeignKey('classroom.Classroom', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    short_description = models.CharField(max_length=100)
-    long_description = models.TextField()
+    description = models.CharField(max_length=100)
+    content = models.TextField()
+    image = models.ImageField(upload_to='uploaded_images', blank=True, null=True)
     
     def __str__(self):
         return self.title

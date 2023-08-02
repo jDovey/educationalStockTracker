@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+    
+{% block content %}
+    <h1>{{ lesson.title }}</h1>
+    <p>{{ lesson.description }}</p>
+    <p>{{ lesson.content }}</p>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid">
+            </div>
+        </div>
+    </div>
+{% endblock %}

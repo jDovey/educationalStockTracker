@@ -5,7 +5,7 @@
 {% block content %}
 <div>
     <h1>Creating lesson for: {{ classroom.name }}</h1>
-    <form action="." method="post">
+    <form action="." method="post" enctype="multipart/form-data">
         <div class="form-group"></div>
             {% csrf_token %}
             <div class="mb-3">
@@ -21,13 +21,18 @@
                 {{ form.title }}
             </div>
             <div class="mb-3">
-                <label class="inline-block mb-2">Short Description:</label><br>
-                {{ form.short_description }}
+                <label class="inline-block mb-2">Description:</label><br>
+                {{ form.description }}
             </div>
             <div class="mb-3">
                 <label class="inline-block mb-2">Long Description:</label><br>
-                {{ form.long_description }}
+                {{ form.content }}
             </div>
+            <div class="mb-3">
+                <label class="inline-block mb-2">Image:</label><br>
+                {{ form.image }}
+            </div>
+            <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid" style="width:25%; height 25%;">
             <!-- Display any form errors -->
             {% for field in form %}
                 {% for error in field.errors %}
