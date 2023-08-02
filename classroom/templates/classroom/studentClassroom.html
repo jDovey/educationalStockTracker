@@ -26,4 +26,10 @@
             {% endfor %}
         </tbody>
     </table>
+    <h2>Lessons</h2>
+    <div class="list-group">
+        {% for lesson in classroomLessons %}
+        <a href="#" class="list-group-item list-group-item-action">{{ lesson.title }}</a>
+        {% endfor %}
+    </div>
 {% endblock %}

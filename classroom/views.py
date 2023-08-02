@@ -5,7 +5,7 @@ from django.contrib import messages
 from user.models import Student
 from .models import Classroom, Lesson
 from user.decorators import allowed_users
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, NewLessonForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm
 
 # Create your views here.
 
@@ -107,9 +107,12 @@ def studentClassroom(request, classroom_id):
         return redirect('classroom:student')
     # get the students in the classroom order by their total_value
     classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
+    # get the published lessons in the classroom order by their order
+    classroomLessons = Lesson.objects.filter(classroom=classroom, status='PUBLISHED').order_by('order')
     return render(request, 'classroom/studentClassroom.html', {
         'classroom': classroom,
         'classroomStudents': classroomStudents,
+        'classroomLessons': classroomLessons,
         })
     
 @login_required
@@ -151,7 +154,7 @@ def removeStudent(request, student_id):
 def newLesson(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
     if request.method == 'POST':
-        form = NewLessonForm(request.POST)
+        form = LessonForm(request.POST)
         if form.is_valid():
             # check if the order and classroom combination already exists
             if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists():
@@ -172,8 +175,49 @@ def newLesson(request, classroom_id):
                 
             })
             
-    form = NewLessonForm()
+    form = LessonForm()
     return render(request, 'classroom/newLesson.html', {
         'form': form,
         'classroom': classroom,
         })
+    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def editLesson(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    if lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to edit this lesson.')
+        return redirect('classroom:teacher')
+    
+    if request.method == 'POST':
+        form = LessonForm(request.POST, instance=lesson)
+        if form.is_valid():
+            notOriginal = False
+            # check if order is in changed data
+            if 'order' in form.changed_data:
+                notOriginal = True
+            # check if the order and classroom combination already exists
+            if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists() and notOriginal:
+                messages.error(request, 'A lesson with that order already exists.')
+            else:
+                form.save()
+                return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+    form = LessonForm(instance=lesson)
+    return render(request, 'classroom/editLesson.html', {
+        'form': form,
+        'classroom': classroom,
+        'lesson': lesson,
+        })
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def deleteLesson(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    if lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to delete this lesson.')
+        return redirect('classroom:teacher')
+    
+    lesson.delete()
+    return redirect('classroom:teacherClassroom', classroom_id=classroom_id)

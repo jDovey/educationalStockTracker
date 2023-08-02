@@ -47,7 +47,7 @@ class EditStudentForm(forms.ModelForm):
         'placeholder': 'XP',
     }))
     
-class NewLessonForm(forms.ModelForm):
+class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
         fields = ('status', 'order', 'title', 'short_description', 'long_description')
