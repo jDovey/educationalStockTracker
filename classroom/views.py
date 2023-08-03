@@ -209,7 +209,9 @@ def editLesson(request, classroom_id, lesson_id):
     
     if request.method == 'POST':
         form = LessonForm(request.POST, request.FILES, instance=lesson)
-        if form.is_valid():
+        objective_forms = LearningObjectiveFormSet(request.POST, prefix=0)
+        
+        if form.is_valid() and all(form.is_valid() for form in objective_forms):
             notOriginal = False
             # check if order is in changed data
             if 'order' in form.changed_data:
@@ -218,11 +220,33 @@ def editLesson(request, classroom_id, lesson_id):
             if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists() and notOriginal:
                 messages.error(request, 'A lesson with that order already exists.')
             else:
-                form.save()
+                lessonEdit = form.save(commit=False)
+                
+                learning_objectives = []
+                for objective_form in objective_forms:
+                    objective_text = objective_form.cleaned_data['learning_objective']
+                    content_text = objective_form.cleaned_data['content']
+                    learning_objectives.append({
+                        'learning_objective': objective_text, 
+                        'content': content_text
+                        })
+                lessonEdit.lesson_outline = json.dumps(learning_objectives)
+                lessonEdit.save()
+                
                 return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+            
     form = LessonForm(instance=lesson)
+    # get the lesson outline, ignore if it is None
+    if lesson.lesson_outline:
+        lesson_outline = json.loads(lesson.lesson_outline)
+        # create a formset for the lesson outline
+        objective_forms = LearningObjectiveFormSet(initial=lesson_outline, prefix=0)
+    else:
+        objective_forms = LearningObjectiveFormSet(prefix=0)
+        
     return render(request, 'classroom/editLesson.html', {
         'form': form,
+        'objective_forms': objective_forms,
         'classroom': classroom,
         'lesson': lesson,
         })

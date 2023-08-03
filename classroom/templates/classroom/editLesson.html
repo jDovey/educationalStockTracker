@@ -1,48 +1,5 @@
-{% extends 'core/base.html' %}
+{% extends 'classroom/lessonForm.html' %}
 
-{% block title %}Classroom{% endblock %}
-    
-{% block content %}
-<div>
-    <h1>Creating lesson for: {{ classroom.name }}</h1>
-    <form action="." method="post" enctype="multipart/form-data">
-        <div class="form-group"></div>
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="inline-block mb-2">Status:</label><br>
-                {{ form.status }}
-            </div>
-            <div class="mb-3">
-                <label class="inline-block mb-2">Order:</label><br>
-                {{ form.order }}
-            </div>
-            <div class="mb-3">
-                <label class="inline-block mb-2">Title:</label><br>
-                {{ form.title }}
-            </div>
-            <div class="mb-3">
-                <label class="inline-block mb-2">Description:</label><br>
-                {{ form.description }}
-            </div>
-            <div class="mb-3">
-                <label class="inline-block mb-2">Content:</label><br>
-                {{ form.content }}
-            </div>
-            <div class="mb-3">
-                <label class="inline-block mb-2">Image:</label><br>
-                {{ form.image }}
-                {% if lesson.image %}
-                    <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid rounded" style="width:25%; height 25%;">
-                {% endif %}
-            </div>
-            <!-- Display any form errors -->
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <p style="color: red">{{ error }}</p>
-                {% endfor %}
-            {% endfor %}
-        </div>
-        <button class="m-3 btn btn-primary" type="submit">Submit</button>
-    </form>
-</div>
+{% block button %}
+    <button class="m-3 btn btn-primary" type="submit">Submit</button>
 {% endblock %}

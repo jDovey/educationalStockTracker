@@ -556,13 +556,13 @@ class TestEditLesson(TestCase):
     # test that a teacher can edit a lesson
     def test_editLesson_POST(self):
         self.client.login(username='testteacher', password='testpass')
-        response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
+        response = self.client.post(reverse('classroom:editLesson', args=[self.classroom.id, self.lesson.id]), {
             'status': 'DRAFT',
             'order': '1',
             'title': 'testlesson',
             'description': 'testdescription',
-            'form-0-learning_objective': 'testobjective',
-            'form-0-content': 'testcontent',
+            'learning_objective': 'testobjective',
+            'content': 'testcontent',
             })
         
         self.assertEquals(response.status_code, 302)
@@ -572,13 +572,13 @@ class TestEditLesson(TestCase):
     # test that a teacher cannot edit a lesson to have a duplicate order
     def test_editLesson_POST_duplicate_order(self):
         self.client.login(username='testteacher', password='testpass')
-        response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
+        response = self.client.post(reverse('classroom:editLesson', args=[self.classroom.id, self.lesson.id]), {
             'status': 'DRAFT',
             'order': '2',
             'title': 'testlesson',
             'description': 'testdescription',
-            'form-0-learning_objective': 'testobjective',
-            'form-0-content': 'testcontent',
+            'learning_objective': 'testobjective',
+            'content': 'testcontent',
             })
         
         self.assertEquals(response.status_code, 200)
