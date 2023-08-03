@@ -50,7 +50,7 @@ class EditStudentForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ('status', 'order', 'title', 'description', 'content', 'image', 'learning_objectives')
+        fields = ('status', 'order', 'title', 'description', 'image')
     
     status = forms.ChoiceField(choices=Lesson.Status.choices, widget=forms.Select(attrs={
         'class': 'form-control',
@@ -72,11 +72,6 @@ class LessonForm(forms.ModelForm):
         'placeholder': 'Description',
     }))
     
-    content = forms.CharField(widget=forms.Textarea(attrs={
-        'class': 'form-control',
-        'placeholder': 'Content',
-    }))
-    
     image = forms.ImageField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control',
         'placeholder': 'Image',
@@ -84,11 +79,16 @@ class LessonForm(forms.ModelForm):
     
 class LearningObjectiveForm(forms.Form):
     class Meta:
-        fields = ('learning_objective',)
+        fields = ('learning_objective', 'content')
         
     learning_objective = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Learning Objective',
+    }))
+    
+    content = forms.CharField(widget=forms.Textarea(attrs={
+        'class': 'form-control',
+        'placeholder': 'Content',
     }))
 
 LearningObjectiveFormSet = forms.formset_factory(LearningObjectiveForm, extra=0)

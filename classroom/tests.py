@@ -475,8 +475,23 @@ class TestNewLesson(TestCase):
             'status': 'DRAFT',
             'order': '1',
             'title': 'testlesson',
-            'short_description': 'testdescription',
-            'long_description': 'testdescription',
+            'description': 'testdescription',
+            'learning_objective': 'testobjective',
+            'content': 'testcontent',
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(Lesson.objects.count(), 1)
+        self.assertRedirects(response, reverse('classroom:teacherClassroom', args=[self.classroom.id]))
+    
+    # test that a new lesson can be made with no lesson objectives or content passed
+    def test_newLesson_POST_no_objectives_or_content(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
+            'status': 'DRAFT',
+            'order': '1',
+            'title': 'testlesson',
+            'description': 'testdescription',
             })
         
         self.assertEquals(response.status_code, 302)
@@ -490,15 +505,17 @@ class TestNewLesson(TestCase):
             'status': 'DRAFT',
             'order': '1',
             'title': 'testlesson',
-            'short_description': 'testdescription',
-            'long_description': 'testdescription',
+            'description': 'testdescription',
+            'learning_objective': 'testobjective',
+            'content': 'testcontent',
             })
         response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
             'status': 'DRAFT',
             'order': '1',
             'title': 'testlesson',
-            'short_description': 'testdescription',
-            'long_description': 'testdescription',
+            'description': 'testdescription',
+            'learning_objective': 'testobjective',
+            'content': 'testcontent',
             })
         
         self.assertEquals(response.status_code, 200)
@@ -511,9 +528,8 @@ class TestEditLesson(TestCase):
         self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
         self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
         self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
-        self.lesson = Lesson.objects.create(status='DRAFT', order='1', classroom=self.classroom, title='testlesson', short_description='testdescription', long_description='testdescription')
-        self.lesson2 = Lesson.objects.create(status='DRAFT', order='2', classroom=self.classroom, title='testlesson2', short_description='testdescription', long_description='testdescription')
-    
+        self.lesson = Lesson.objects.create(status='DRAFT', order='1', classroom=self.classroom, title='testlesson', description='testdescription')
+        self.lesson2 = Lesson.objects.create(status='DRAFT', order='2', classroom=self.classroom, title='testlesson2', description='testdescription2')
     # test that the correct template is used when the page is loaded
     def test_editLesson_GET(self):
         self.client.login(username='testteacher', password='testpass')
@@ -540,12 +556,13 @@ class TestEditLesson(TestCase):
     # test that a teacher can edit a lesson
     def test_editLesson_POST(self):
         self.client.login(username='testteacher', password='testpass')
-        response = self.client.post(reverse('classroom:editLesson', args=[self.classroom.id, self.lesson.id]), {
+        response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
             'status': 'DRAFT',
             'order': '1',
-            'title': 'editedtestlesson',
-            'short_description': 'testdescription',
-            'long_description': 'testdescription',
+            'title': 'testlesson',
+            'description': 'testdescription',
+            'form-0-learning_objective': 'testobjective',
+            'form-0-content': 'testcontent',
             })
         
         self.assertEquals(response.status_code, 302)
@@ -555,12 +572,13 @@ class TestEditLesson(TestCase):
     # test that a teacher cannot edit a lesson to have a duplicate order
     def test_editLesson_POST_duplicate_order(self):
         self.client.login(username='testteacher', password='testpass')
-        response = self.client.post(reverse('classroom:editLesson', args=[self.classroom.id, self.lesson.id]), {
+        response = self.client.post(reverse('classroom:newLesson', args=[self.classroom.id]), {
             'status': 'DRAFT',
             'order': '2',
-            'title': 'editedtestlesson',
-            'short_description': 'testdescription',
-            'long_description': 'testdescription',
+            'title': 'testlesson',
+            'description': 'testdescription',
+            'form-0-learning_objective': 'testobjective',
+            'form-0-content': 'testcontent',
             })
         
         self.assertEquals(response.status_code, 200)
@@ -573,8 +591,8 @@ class TestDeleteLesson(TestCase):
         self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
         self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
         self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
-        self.lesson = Lesson.objects.create(status='DRAFT', order='1', classroom=self.classroom, title='testlesson', short_description='testdescription', long_description='testdescription')
-        
+        self.lesson = Lesson.objects.create(status='DRAFT', order='1', classroom=self.classroom, title='testlesson', description='testdescription')
+                
     # test that a teacher can delete a lesson
     def test_deleteLesson_POST(self):
         self.client.login(username='testteacher', password='testpass')

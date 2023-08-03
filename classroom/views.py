@@ -7,6 +7,8 @@ from .models import Classroom, Lesson
 from user.decorators import allowed_users
 from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet
 
+import json
+
 # Create your views here.
 
 @login_required
@@ -163,16 +165,22 @@ def newLesson(request, classroom_id):
             else:
                 # save the lesson without committing to the database
                 lesson = form.save(commit=False)
-                # this allows us to add the teacher to the lesson
+                # this allows us to add the teacher and the learning outline to the lesson
                 lesson.teacher = request.user.teacher
                 lesson.classroom = classroom
-                print(request.POST)
+                
+                
+                learning_objectives = []
                 for objective_form in objective_forms:
                     objective_text = objective_form.cleaned_data['learning_objective']
-                    if objective_text.strip():
-                        lesson.learning_objectives.append(objective_text)
+                    content_text = objective_form.cleaned_data['content']
+                    learning_objectives.append({
+                        'learning_objective': objective_text, 
+                        'content': content_text
+                        })
+                lesson.lesson_outline = json.dumps(learning_objectives)
                 lesson.save()
-                
+            
                 return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
             
             return render(request, 'classroom/newLesson.html', {
@@ -235,6 +243,7 @@ def deleteLesson(request, classroom_id, lesson_id):
 def viewLesson(request, classroom_id, lesson_id):
     classroom = Classroom.objects.get(id=classroom_id)
     lesson = Lesson.objects.get(id=lesson_id)
+    lesson_outline = json.loads(lesson.lesson_outline)
     if lesson.classroom != request.user.student.classroom:
         messages.error(request, 'You do not have permission to view this lesson.')
         return redirect('classroom:student')
@@ -242,4 +251,5 @@ def viewLesson(request, classroom_id, lesson_id):
     return render(request, 'classroom/viewLesson.html', {
         'classroom': classroom,
         'lesson': lesson,
+        'lesson_outline': lesson_outline,
         })

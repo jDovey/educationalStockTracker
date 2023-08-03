@@ -8,7 +8,11 @@
         <div class="col-md-8">
             <h1>{{ lesson.title }}</h1>
             <p><strong>{{ lesson.description }}</strong></p>
-            <p>{{ lesson.content }}</p>
+            {% for item in lesson_outline %}
+            <hr>
+            <p>{{ item.learning_objective }}</p>
+            <p>{{ item.content }}</p>
+            {% endfor %}
         </div>
         <div class="col-6 col-md-4">
             {% if lesson.image %}

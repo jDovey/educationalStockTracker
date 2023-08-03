@@ -32,10 +32,6 @@
                 {{ form.description }}
             </div>
             <div class="mb-3">
-                <label class="inline-block mb-2">Content:</label><br>
-                {{ form.content }}
-            </div>
-            <div class="mb-3">
                 <label class="inline-block mb-2">Image:</label><br>
                 {{ form.image }}
             </div>
@@ -50,7 +46,7 @@
             {% endfor %}
             </div>
 
-            <div id="empty_objective_form" class="hidden">{{ objective_forms.empty_form.as_p }}</div>
+            <div id="empty_objective_form" class="hidden"><hr>{{ objective_forms.empty_form.as_p }}</div>
 
             <button type="button" class="btn btn-primary" id="add-objective">Add Objective</button>
             {% endif %}

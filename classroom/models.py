@@ -27,9 +27,8 @@ class Lesson(models.Model):
     classroom = models.ForeignKey('classroom.Classroom', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
-    content = models.TextField()
     image = models.ImageField(upload_to='uploaded_images', blank=True, null=True)
-    learning_objectives = ArrayField(models.CharField(max_length=100), blank=True, null=True)
+    lesson_outline = models.JSONField(blank=True, null=True)
     
     def __str__(self):
         return self.title
