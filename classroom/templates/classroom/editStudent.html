@@ -3,6 +3,8 @@
 {% block title %}Classroom{% endblock %}
     
 {% block content %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
     <h1>{{student.user.username}}</h1>
 
     <div>
@@ -25,7 +27,8 @@
                     {% endfor %}
                 {% endfor %}
             </div>
-            <button class="m-3 btn btn-primary" type="submit">Submit</button>
+            <button class="m-3 btn btn-primary" type="submit" title="Submit">Submit</button>
         </form>
+        <a href="{% url 'classroom:resetStudent' student.user_id %}" class="btn btn-outline-danger btn-sm" title="Reset student" onclick="return confirm('Are you sure? This will delete their holdings and set their cash back to default.');"><i class="material-symbols-outlined">device_reset</i></a>
     </div>
 {% endblock %}

@@ -5,6 +5,7 @@ from django.contrib import messages
 from user.models import Student
 from .models import Classroom, Lesson
 from user.decorators import allowed_users
+from core.models import Holdings
 from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet
 
 import json
@@ -135,6 +136,21 @@ def editStudent(request, student_id):
         'form': form,
         'student': student,
         })
+    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def resetStudent(request, student_id):
+    student = Student.objects.get(user_id=student_id)
+    if student.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to remove this student.')
+        return redirect('classroom:teacher')
+    # reset student values
+    student.cash = 10000.00
+    student.total_value = 10000.00
+    student.save()
+    # delete their holdings
+    Holdings.objects.filter(student=student).delete()
+    return redirect('classroom:teacherClassroom', classroom_id=student.classroom.id)
 
 @login_required
 @allowed_users(allowed_roles=['TEACHER'])

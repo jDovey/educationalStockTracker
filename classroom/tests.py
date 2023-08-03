@@ -1,7 +1,7 @@
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
-from .views import index, student, teacher, newClassroom, teacherClassroom, studentClassroom, editStudent, removeStudent, newLesson, editLesson, deleteLesson, viewLesson
+from .views import index, student, teacher, newClassroom, teacherClassroom, studentClassroom, editStudent, removeStudent, newLesson, editLesson, deleteLesson, viewLesson, resetStudent
 from user.models import User, Student, Teacher
 from .models import Classroom, Lesson
 
@@ -34,6 +34,10 @@ class TestUrls(SimpleTestCase):
     def test_editStudent_url(self):
         url = reverse('classroom:editStudent', args=[1])
         self.assertEquals(resolve(url).func, editStudent)
+    
+    def test_resetStudent_url(self):
+        url = reverse('classroom:resetStudent', args=[1])
+        self.assertEquals(resolve(url).func, resetStudent)
     
     def test_removeStudent_url(self):
         url = reverse('classroom:removeStudent', args=[1])
@@ -388,6 +392,29 @@ class TestEditStudent(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertEquals(Student.objects.get(user=self.studentUser).cash, 100)
         self.assertEquals(Student.objects.get(user=self.studentUser).xp, 100)
+        self.assertRedirects(response, reverse('classroom:teacherClassroom', args=[self.classroom.id]))
+
+class TestResetStudent(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.TeacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.TeacherUser.teacher, passcode='testpasscode')
+        
+        self.studentUser.student.classroom = self.classroom
+        self.studentUser.student.save()
+    
+    # test that a teacher can reset a student's cash and xp
+    def test_resetStudent_POST(self):
+        # set the student's cash and xp to 100
+        self.studentUser.student.cash = 100
+        self.studentUser.student.total_value = 100
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.post(reverse('classroom:resetStudent', args=[self.studentUser.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(Student.objects.get(user=self.studentUser).cash, 10000)
+        self.assertEquals(Student.objects.get(user=self.studentUser).total_value, 10000)
         self.assertRedirects(response, reverse('classroom:teacherClassroom', args=[self.classroom.id]))
     
 class TestRemoveStudent(TestCase):
