@@ -50,7 +50,7 @@ class EditStudentForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ('status', 'order', 'title', 'description', 'content', 'image')
+        fields = ('status', 'order', 'title', 'description', 'content', 'image', 'learning_objectives')
     
     status = forms.ChoiceField(choices=Lesson.Status.choices, widget=forms.Select(attrs={
         'class': 'form-control',
@@ -81,3 +81,14 @@ class LessonForm(forms.ModelForm):
         'class': 'form-control',
         'placeholder': 'Image',
     }))
+    
+class LearningObjectiveForm(forms.Form):
+    class Meta:
+        fields = ('learning_objective',)
+        
+    learning_objective = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Learning Objective',
+    }))
+
+LearningObjectiveFormSet = forms.formset_factory(LearningObjectiveForm, extra=0)

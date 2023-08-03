@@ -5,7 +5,7 @@ from django.contrib import messages
 from user.models import Student
 from .models import Classroom, Lesson
 from user.decorators import allowed_users
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet
 
 # Create your views here.
 
@@ -155,7 +155,8 @@ def newLesson(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
     if request.method == 'POST':
         form = LessonForm(request.POST, request.FILES)
-        if form.is_valid():
+        objective_forms = LearningObjectiveFormSet(request.POST, prefix=0)
+        if form.is_valid() and all(form.is_valid() for form in objective_forms):
             # check if the order and classroom combination already exists
             if Lesson.objects.filter(order=form.cleaned_data['order'], classroom=Classroom.objects.get(id=classroom_id)).exists():
                 messages.error(request, 'A lesson with that order already exists.')
@@ -165,19 +166,27 @@ def newLesson(request, classroom_id):
                 # this allows us to add the teacher to the lesson
                 lesson.teacher = request.user.teacher
                 lesson.classroom = classroom
+                print(request.POST)
+                for objective_form in objective_forms:
+                    objective_text = objective_form.cleaned_data['learning_objective']
+                    if objective_text.strip():
+                        lesson.learning_objectives.append(objective_text)
                 lesson.save()
                 
                 return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
             
             return render(request, 'classroom/newLesson.html', {
                 'form': form,
+                'objective_forms': objective_forms,
                 'classroom': classroom,
                 
             })
             
     form = LessonForm()
+    objective_forms = LearningObjectiveFormSet(prefix=0)
     return render(request, 'classroom/newLesson.html', {
         'form': form,
+        'objective_forms': objective_forms,
         'classroom': classroom,
         })
     

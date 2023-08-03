@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
@@ -28,6 +29,7 @@ class Lesson(models.Model):
     description = models.CharField(max_length=100)
     content = models.TextField()
     image = models.ImageField(upload_to='uploaded_images', blank=True, null=True)
+    learning_objectives = ArrayField(models.CharField(max_length=100), blank=True, null=True)
     
     def __str__(self):
         return self.title
