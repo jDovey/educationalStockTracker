@@ -7,7 +7,7 @@ from user.models import Student
 from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionForm
 
 import json
 
@@ -419,7 +419,12 @@ def editQuiz(request, classroom_id, lesson_id):
                 else:
                     orders
             for i, form in enumerate(quiz_forms):
-                quiz_question = quiz_questions[i]
+                # check if the user is adding a new quiz question
+                if i < len(quiz_questions):
+                    quiz_question = quiz_questions[i]
+                else:
+                    quiz_question = QuizQuestion()
+                    quiz_question.lesson = lesson
                 
                 # get the cleaned data from the form
                 data = form.cleaned_data
@@ -434,6 +439,7 @@ def editQuiz(request, classroom_id, lesson_id):
             
             return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
     # create a formset for the quiz questions
+    QuizQuestionFormSet = forms.formset_factory(QuizQuestionForm, extra=len(quiz_questions))
     quiz_forms = QuizQuestionFormSet(prefix=0)
     # populate the quiz forms with the quiz questions
     formset_data = [{'order':question.order, 'question': question.question, 'correctAnswer': question.correctAnswer, 'wrongAnswer1': question.wrongAnswer1, 'wrongAnswer2': question.wrongAnswer2} for question in quiz_questions]

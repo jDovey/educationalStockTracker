@@ -133,5 +133,3 @@ class QuizQuestionForm(forms.ModelForm):
             'wrongAnswer1': forms.TextInput(attrs={'class': 'form-control'}),
             'wrongAnswer2': forms.TextInput(attrs={'class': 'form-control'}),
         }
-
-QuizQuestionFormSet = forms.formset_factory(QuizQuestionForm, extra=3)
