@@ -10,15 +10,7 @@
         <form action="." method="post">
             <div class="form-group"></div>
                 {% csrf_token %}
-                <div class="mb-3">
-                    <label class="inline-block mb-2">Cash:</label><br>
-                    {{ form.cash }}
-                </div>
-
-                <div class="mb-3">
-                    <label class="inline-block mb-2">XP:</label><br>
-                    {{ form.xp }}
-                </div>
+                {{form.as_p}}
                 <!-- Display any form errors -->
                 {% for field in form %}
                     {% for error in field.errors %}
@@ -28,6 +20,6 @@
             </div>
             <button class="m-3 btn btn-primary" type="submit" title="Submit">Submit</button>
         </form>
-        <a href="{% url 'classroom:resetStudent' student.user_id %}" class="btn btn-outline-danger btn-sm" title="Reset student" onclick="return confirm('Are you sure? This will delete their holdings and set their cash back to default.');"><i class="material-symbols-outlined">device_reset</i></a>
+        <a href="#" class="btn btn-outline-danger btn-sm" title="Delete" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
     </div>
 {% endblock %}

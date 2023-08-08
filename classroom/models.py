@@ -78,7 +78,7 @@ class QuizQuestion(models.Model):
     wrongAnswer2 = models.CharField(max_length=100)
     
     def __str__(self):
-        return self.question
+        return self.question + ' - ' + self.lesson.title
 
 class QuizResponse(models.Model):
     class Meta:
