@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Classroom{% endblock %}
+    
+{% block content %}
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
+<div>
+    <h1>Creating Quiz for: {{ lesson.title }}</h1>
+    <form action="." method="post" enctype="multipart/form-data">
+        <div class="form-group"></div>
+            {% csrf_token %}
+            {{ quiz_forms.management_form }}
+            <div class="quiz-form-list">
+            {% for quiz_form in quiz_forms %}
+                <div class="quiz-form">
+                    <hr>
+                    {{ quiz_form.as_p }}
+                </div>
+            {% endfor %}
+            </div>
+
+            <div id="empty_quiz_form" class="hidden"><hr>{{ quiz_forms.empty_form.as_p }}</div>
+
+            <button type="button" class="btn btn-primary" id="add-quiz">Add quiz</button>
+
+            <button class="m-3 btn btn-primary" type="submit">Create</button>
+            
+            <!-- Display any form errors -->
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<script>
+    const addquizButton = document.getElementById("add-quiz");
+    const totalNewquizForms = document.getElementById("id_form-TOTAL_FORMS");
+    const currentquizForms = document.getElementsByClassName("quiz-form");
+    addquizButton.addEventListener("click", add_new_form)
+
+    function add_new_form(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        const currentquizFormCount = currentquizForms.length;
+        const quizFormTarget = document.getElementsByClassName("quiz-form-list")[0];
+        const emptyquizForm = document.getElementById("empty_quiz_form").cloneNode(true);
+        emptyquizForm.setAttribute("class", "quiz-form");
+        emptyquizForm.setAttribute("id", `objectve-form-${currentquizFormCount}`);
+        const regex = new RegExp('__prefix__', 'g');
+        emptyquizForm.innerHTML = emptyquizForm.innerHTML.replace(regex, currentquizFormCount);
+        totalNewquizForms.setAttribute("value", currentquizFormCount + 1);
+        quizFormTarget.append(emptyquizForm);
+    }
+</script>
+{% endblock %}

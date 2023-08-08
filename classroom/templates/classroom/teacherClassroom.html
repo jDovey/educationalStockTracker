@@ -39,6 +39,7 @@
             <th>Lesson</th>
             <th>Status</th>
             <th>Actions</th>
+            <th>Quiz</th>
         </tr>
     </thead>
     <tbody>
@@ -51,6 +52,14 @@
                 <a href="{% url 'classroom:editLesson' classroom.id lesson.id %}" class="btn btn-outline-warning btn-sm" title="Edit lesson"><i class="material-symbols-outlined">edit</i></a>
                 <a href="{% url 'classroom:deleteLesson' classroom.id lesson.id %}" class="btn btn-outline-danger btn-sm" title="Remove lesson" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
             </div>
+            </td>
+            <td>
+                <!-- check if current lesson has an associated quiz -->
+                {% if lesson.has_quiz %}
+                <a href="{% url 'classroom:editQuiz' classroom.id lesson.id %}" class="btn btn-outline-warning" title="Add Quiz"><i class="material-symbols-outlined">edit</id></a>
+                {% else %}
+                <a href="{% url 'classroom:newQuiz' classroom.id lesson.id %}" class="btn btn-outline-success" title="Add Quiz"><i class="material-symbols-outlined">add</id></a>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

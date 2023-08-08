@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django import forms
 
 from user.models import Student
-from .models import Classroom, Lesson, SurveyResponse
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm
 
 import json
 
@@ -94,6 +95,11 @@ def teacherClassroom(request, classroom_id):
     classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
     # get the lessons in the classroom order by their order
     classroomLessons = Lesson.objects.filter(classroom=classroom).order_by('order')
+    
+    for lesson in classroomLessons:
+        # check if there is an associated quiz
+        lesson.has_quiz = QuizQuestion.objects.filter(lesson=lesson).exists()
+        
     return render(request, 'classroom/teacherClassroom.html', {
         'classroom': classroom,
         'classroomStudents': classroomStudents,
@@ -352,4 +358,92 @@ def survey(request, classroom_id, lesson_id):
         'classroom': classroom,
         'lesson': lesson,
         'form': form,
+        })
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def newQuiz(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    
+    if lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to create a quiz for this lesson.')
+        return redirect('classroom:teacher')
+    
+    if request.method == 'POST':
+        quiz_forms = QuizQuestionFormSet(request.POST, prefix=0)
+        if all(form.is_valid() for form in quiz_forms):
+            for form in quiz_forms:
+                # check if a quiz question with that order already exists
+                if QuizQuestion.objects.filter(lesson=lesson, order=form.cleaned_data['order']).exists():
+                    messages.error(request, 'A quiz question with that order already exists.')
+                    return redirect('classroom:newQuiz', classroom_id=classroom_id, lesson_id=lesson_id)
+                
+                # save the quiz question without committing to the database
+                quiz = form.save(commit=False)
+                # this allows us to add the lesson to the quiz question
+                quiz.lesson = lesson
+                quiz.save()
+            
+            return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+    
+    quiz_forms = QuizQuestionFormSet(prefix=0)
+    return render(request, 'classroom/newQuiz.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'quiz_forms': quiz_forms,
+        })
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def editQuiz(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    
+    # get the quiz questions for the lesson
+    quiz_questions = QuizQuestion.objects.filter(lesson=lesson).order_by('order')
+    
+    if lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to edit a quiz for this lesson.')
+        return redirect('classroom:teacher')
+    
+    if request.method == 'POST':
+        quiz_forms = QuizQuestionFormSet(request.POST, prefix=0)
+        if all(form.is_valid() for form in quiz_forms):
+            # loop through forms and check if there are any duplicate orders
+            orders={}
+            for form in quiz_forms:
+                if form.cleaned_data['order'] in orders:
+                    messages.error(request, 'A quiz question with that order already exists.')
+                    return redirect('classroom:editQuiz', classroom_id=classroom_id, lesson_id=lesson_id)
+                else:
+                    orders
+            for i, form in enumerate(quiz_forms):
+                quiz_question = quiz_questions[i]
+                
+                # get the cleaned data from the form
+                data = form.cleaned_data
+                # set the quiz question attributes to the cleaned data
+                quiz_question.order = data['order']
+                quiz_question.question = data['question']
+                quiz_question.correctAnswer = data['correctAnswer']
+                quiz_question.wrongAnswer1 = data['wrongAnswer1']
+                quiz_question.wrongAnswer2 = data['wrongAnswer2']
+                quiz_question.save()
+                
+            
+            return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+    # create a formset for the quiz questions
+    quiz_forms = QuizQuestionFormSet(prefix=0)
+    # populate the quiz forms with the quiz questions
+    formset_data = [{'order':question.order, 'question': question.question, 'correctAnswer': question.correctAnswer, 'wrongAnswer1': question.wrongAnswer1, 'wrongAnswer2': question.wrongAnswer2} for question in quiz_questions]
+    for idx, data in enumerate(formset_data):
+        quiz_forms.forms[idx].initial = data
+        
+        
+    
+    return render(request, 'classroom/editQuiz.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'quiz_forms': quiz_forms,
         })

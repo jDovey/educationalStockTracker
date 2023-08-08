@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Classroom, Lesson, SurveyResponse
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
 from user.models import Student
 
 class NewClassroomForm(forms.ModelForm):
@@ -114,3 +114,24 @@ class SurveyResponseForm(forms.ModelForm):
                 'placeholder': 'Improvement suggestions',
                 }),
         }
+
+class QuizQuestionForm(forms.ModelForm):
+    class Meta:
+        model = QuizQuestion
+        fields = [
+            'order',
+            'question',
+            'correctAnswer',
+            'wrongAnswer1',
+            'wrongAnswer2'
+        ]
+        
+        widgets = {
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+            'question': forms.TextInput(attrs={'class': 'form-control'}),
+            'correctAnswer': forms.TextInput(attrs={'class': 'form-control'}),
+            'wrongAnswer1': forms.TextInput(attrs={'class': 'form-control'}),
+            'wrongAnswer2': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+QuizQuestionFormSet = forms.formset_factory(QuizQuestionForm, extra=3)

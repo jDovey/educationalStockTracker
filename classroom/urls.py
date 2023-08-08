@@ -20,4 +20,6 @@ urlpatterns = [
     path('student/<int:classroom_id>/lesson/<int:lesson_id>/', views.viewLesson, name='viewLesson'),
     path('student/<int:classroom_id>/lesson/<int:lesson_id>/survey/', views.survey, name='survey'),
     path('teacher/<int:classroom_id>/previewLesson/<int:lesson_id>/', views.previewLesson, name='previewLesson'),
+    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/newQuiz/', views.newQuiz, name='newQuiz'),
+    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/', views.editQuiz, name='editQuiz'),
 ]
