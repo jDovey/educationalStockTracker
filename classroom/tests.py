@@ -1,63 +1,71 @@
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 
-from .views import index, student, teacher, newClassroom, teacherClassroom, studentClassroom, editStudent, removeStudent, newLesson, editLesson, deleteLesson, viewLesson, resetStudent
+from . import views
 from user.models import User, Student, Teacher
-from .models import Classroom, Lesson
+from .models import Classroom, Lesson, SurveyResponse
 
 # Create your tests here.
 class TestUrls(SimpleTestCase):
     def test_index_url(self):
         url = reverse('classroom:index')
-        self.assertEquals(resolve(url).func, index)
+        self.assertEquals(resolve(url).func, views.index)
         
     def test_student_url(self):
         url = reverse('classroom:student')
-        self.assertEquals(resolve(url).func, student)
+        self.assertEquals(resolve(url).func, views.student)
         
     def test_teacher_url(self):
         url = reverse('classroom:teacher')
-        self.assertEquals(resolve(url).func, teacher)
+        self.assertEquals(resolve(url).func, views.teacher)
     
     def test_newClassroom_url(self):
         url = reverse('classroom:newClassroom')
-        self.assertEquals(resolve(url).func, newClassroom)
+        self.assertEquals(resolve(url).func, views.newClassroom)
     
     def test_teacherClassroom_url(self):
         url = reverse('classroom:teacherClassroom', args=[1])
-        self.assertEquals(resolve(url).func, teacherClassroom)
+        self.assertEquals(resolve(url).func, views.teacherClassroom)
     
     def test_studentClassroom_url(self):
         url = reverse('classroom:studentClassroom', args=[1])
-        self.assertEquals(resolve(url).func, studentClassroom)
+        self.assertEquals(resolve(url).func, views.studentClassroom)
     
     def test_editStudent_url(self):
         url = reverse('classroom:editStudent', args=[1])
-        self.assertEquals(resolve(url).func, editStudent)
+        self.assertEquals(resolve(url).func, views.editStudent)
     
     def test_resetStudent_url(self):
         url = reverse('classroom:resetStudent', args=[1])
-        self.assertEquals(resolve(url).func, resetStudent)
+        self.assertEquals(resolve(url).func, views.resetStudent)
     
     def test_removeStudent_url(self):
         url = reverse('classroom:removeStudent', args=[1])
-        self.assertEquals(resolve(url).func, removeStudent)
+        self.assertEquals(resolve(url).func, views.removeStudent)
     
     def test_newLesson_url(self):
         url = reverse('classroom:newLesson', args=[1])
-        self.assertEquals(resolve(url).func, newLesson)
+        self.assertEquals(resolve(url).func, views.newLesson)
     
     def test_editLesson_url(self):
         url = reverse('classroom:editLesson', args=[1, 1])
-        self.assertEquals(resolve(url).func, editLesson)
+        self.assertEquals(resolve(url).func, views.editLesson)
     
     def test_deleteLesson_url(self):
         url = reverse('classroom:deleteLesson', args=[1, 1])
-        self.assertEquals(resolve(url).func, deleteLesson)
+        self.assertEquals(resolve(url).func, views.deleteLesson)
         
     def test_viewLesson_url(self):
         url = reverse('classroom:viewLesson', args=[1, 1])
-        self.assertEquals(resolve(url).func, viewLesson)
+        self.assertEquals(resolve(url).func, views.viewLesson)
+    
+    def test_previewLesson_url(self):
+        url = reverse('classroom:previewLesson', args=[1, 1])
+        self.assertEquals(resolve(url).func, views.previewLesson)
+    
+    def test_survey_url(self):
+        url = reverse('classroom:survey', args=[1, 1])
+        self.assertEquals(resolve(url).func, views.survey)
         
         
 class TestIndex(TestCase):
@@ -657,3 +665,138 @@ class TestDeleteLesson(TestCase):
         self.assertEquals(response.status_code, 302)
         self.assertRedirects(response, reverse('classroom:teacher'))
         
+class TestViewLesson(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
+        self.lessonPublished = Lesson.objects.create(status='PUBLISHED', order='1', classroom=self.classroom, title='testlesson', description='testdescription')
+        self.studentUser.student.classroom = self.classroom
+        self.studentUser.student.save()
+    
+    # test that the correct template is used when the page is loaded
+    def test_viewLesson_GET(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(reverse('classroom:viewLesson', args=[self.classroom.id, self.lessonPublished.id]))
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/viewLesson.html')
+    
+    # test that a teacher will be redirected to the teacher page
+    def test_viewLesson_GET_as_teacher(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(reverse('classroom:viewLesson', args=[self.classroom.id, self.lessonPublished.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:teacher'))
+    
+    # test that a user who is not logged in will be redirected to the login page
+    def test_viewLesson_GET_not_logged_in(self):
+        response = self.client.get(reverse('classroom:viewLesson', args=[self.classroom.id, self.lessonPublished.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + reverse('classroom:viewLesson', args=[self.classroom.id, self.lessonPublished.id]))
+    
+    # test that a student cannot view a lesson that is not published
+    def test_viewLesson_GET_not_published(self):
+        self.lessonDraft = Lesson.objects.create(status='DRAFT', order='2', classroom=self.classroom, title='testlesson2', description='testdescription2')
+        self.client.login(username='teststudent', password='testpass')
+        # multiple redirects are followed to get to the student page
+        response = self.client.get(reverse('classroom:viewLesson', args=[self.classroom.id, self.lessonDraft.id]), follow=True)
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/studentClassroom.html')
+        
+class TestPreviewLesson(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.lesson = Lesson.objects.create(status='DRAFT', order='1', classroom=self.classroom, title='testlesson', description='testdescription')
+    
+    # test that the correct template is used when the page is loaded
+    def test_previewLesson_GET(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(reverse('classroom:previewLesson', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/viewLesson.html')
+    
+    # test that a student will be redirected to the student page
+    def test_previewLesson_GET_as_student(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(reverse('classroom:previewLesson', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('core:index'))
+    
+    # test that a user who is not logged in will be redirected to the login page
+    def test_previewLesson_GET_not_logged_in(self):
+        response = self.client.get(reverse('classroom:previewLesson', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + reverse('classroom:previewLesson', args=[self.classroom.id, self.lesson.id]))
+    
+    # test that a teacher cannot preview a lesson that they do not own
+    def test_previewLesson_GET_not_owner(self):
+        # create a new teacher
+        User.objects.create_user(username='testteacher2', password='testpass', role='TEACHER').teacher
+        
+        # login as the new teacher
+        self.client.login(username='testteacher2', password='testpass')
+        response = self.client.get(reverse('classroom:previewLesson', args=[self.classroom.id, self.lesson.id]))
+        
+        # teacher should be redirected to the teacher page as they do not own the classroom
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:teacher'))
+    
+class TestSurvey(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.teacherUser = User.objects.create_user(username='testteacher', password='testpass', role='TEACHER')
+        self.classroom = Classroom.objects.create(name='testclassroom', teacher=self.teacherUser.teacher, passcode='testpasscode')
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+        self.lesson = Lesson.objects.create(status='PUBLISHED', order='1', classroom=self.classroom, title='testlesson', description='testdescription')
+        self.studentUser.student.classroom = self.classroom
+        self.studentUser.student.save()
+    
+    # test that the correct template is used when the page is loaded
+    def test_survey_GET(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(reverse('classroom:survey', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'classroom/survey.html')
+    
+    # test that a teacher will be redirected to the teacher page
+    def test_survey_GET_as_teacher(self):
+        self.client.login(username='testteacher', password='testpass')
+        response = self.client.get(reverse('classroom:survey', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:teacher'))
+    
+    # test that a user who is not logged in will be redirected to the login page
+    def test_survey_GET_not_logged_in(self):
+        response = self.client.get(reverse('classroom:survey', args=[self.classroom.id, self.lesson.id]))
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + reverse('classroom:survey', args=[self.classroom.id, self.lesson.id]))
+    
+    # test that a survey response is created when the form is submitted
+    def test_survey_POST(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.post(reverse('classroom:survey', args=[self.classroom.id, self.lesson.id]), {
+            'content_understanding': '1',
+            'engagement': '1',
+            'assessment_accuracy': 'true',
+            'satisfaction': '1',
+            'improvement_suggestions': 'testimprovementsuggestions'
+            })
+        
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('classroom:viewLesson', args=[self.classroom.id, self.lesson.id]))
+        self.assertEquals(SurveyResponse.objects.count(), 1)
+    

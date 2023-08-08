@@ -44,7 +44,7 @@
     <tbody>
         {% for lesson in classroomLessons %}
         <tr>
-            <td>{{ lesson.title }}</td>
+            <td><a href="{% url 'classroom:previewLesson' classroom.id lesson.id %}">{{ lesson.title }}</a></td>
             <td>{{ lesson.status }}</td>
             <td>
             <div class="btn-group" role="group" aria-label="Basic outlined example">

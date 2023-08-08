@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Classroom, Lesson
+from .models import Classroom, Lesson, SurveyResponse
 from user.models import Student
 
 class NewClassroomForm(forms.ModelForm):
@@ -92,3 +92,25 @@ class LearningObjectiveForm(forms.Form):
     }))
 
 LearningObjectiveFormSet = forms.formset_factory(LearningObjectiveForm, extra=0)
+
+class SurveyResponseForm(forms.ModelForm):
+    class Meta:
+        model = SurveyResponse
+        fields = [
+            'content_understanding',
+            'engagement',
+            'assessment_accuracy',
+            'satisfaction',
+            'improvement_suggestions'
+        ]
+        
+        widgets = {
+            'content_understanding': forms.Select(attrs={'class': 'form-control'}),
+            'engagement': forms.Select(attrs={'class': 'form-control'}),
+            'assessment_accuracy': forms.CheckboxInput(attrs={'class': 'form-control'}),
+            'satisfaction': forms.Select(attrs={'class': 'form-control'}),
+            'improvement_suggestions': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Improvement suggestions',
+                }),
+        }

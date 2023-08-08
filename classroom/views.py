@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from user.models import Student
-from .models import Classroom, Lesson
+from .models import Classroom, Lesson, SurveyResponse
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm
 
 import json
 
@@ -283,8 +283,13 @@ def deleteLesson(request, classroom_id, lesson_id):
 def viewLesson(request, classroom_id, lesson_id):
     classroom = Classroom.objects.get(id=classroom_id)
     lesson = Lesson.objects.get(id=lesson_id)
-    lesson_outline = json.loads(lesson.lesson_outline)
-    if lesson.classroom != request.user.student.classroom:
+    # check if the lesson has a lesson outline
+    if lesson.lesson_outline:
+        lesson_outline = json.loads(lesson.lesson_outline)
+    else:
+        lesson_outline = None
+    
+    if lesson.classroom != request.user.student.classroom or lesson.status != 'PUBLISHED':
         messages.error(request, 'You do not have permission to view this lesson.')
         return redirect('classroom:student')
     
@@ -292,4 +297,59 @@ def viewLesson(request, classroom_id, lesson_id):
         'classroom': classroom,
         'lesson': lesson,
         'lesson_outline': lesson_outline,
+        })
+    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def previewLesson(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    # check if the lesson has a lesson outline
+    if lesson.lesson_outline:
+        lesson_outline = json.loads(lesson.lesson_outline)
+    else:
+        lesson_outline = None
+    
+    if lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to view this lesson.')
+        return redirect('classroom:teacher')
+    
+    return render(request, 'classroom/viewLesson.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'lesson_outline': lesson_outline,
+        })
+    
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def survey(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    
+    if lesson.classroom != request.user.student.classroom or lesson.status != 'PUBLISHED':
+        messages.error(request, 'You do not have permission.')
+        return redirect('classroom:student')
+    
+    if request.method == 'POST':
+        form = SurveyResponseForm(request.POST)
+        if form.is_valid():
+            # check if the student has already submitted a survey response for this lesson
+            if SurveyResponse.objects.filter(lesson=lesson, student=request.user.student).exists():
+                messages.error(request, 'You have already submitted a survey response for this lesson.')
+                return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+            # save the survey response without committing to the database
+            surveyResponse = form.save(commit=False)
+            # this allows us to add the lesson and student to the survey response
+            surveyResponse.lesson = lesson
+            surveyResponse.student = request.user.student
+            surveyResponse.save()
+
+            messages.success(request, 'You have successfully submitted your survey response.')
+            return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    form = SurveyResponseForm()
+    return render(request, 'classroom/survey.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'form': form,
         })

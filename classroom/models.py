@@ -32,4 +32,37 @@ class Lesson(models.Model):
     
     def __str__(self):
         return self.title
+
+class SurveyResponse(models.Model):
+    class Meta:
+        unique_together = ('lesson', 'student')
+    
+    lesson = models.ForeignKey('classroom.Lesson', on_delete=models.CASCADE)
+    student = models.ForeignKey('user.Student', on_delete=models.CASCADE)
+    content_understanding = models.IntegerField(choices=[
+        (1, 'Very well'),
+        (2, 'Somewhat well'),
+        (3, 'Not well')
+    ])
+    
+    engagement = models.IntegerField(choices=[
+        (1, 'Very engaged'),
+        (2, 'Moderately engaged'),
+        (3, 'Not very engaged')
+    ])
+    
+    assessment_accuracy = models.BooleanField()
+    
+    satisfaction = models.IntegerField(choices=[
+        (1, 'Not satisfied at all'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, 'Very satisfied')
+    ])
+    
+    improvement_suggestions = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.lesson.title + ' - ' + self.student.user.username
     
