@@ -436,3 +436,43 @@ def editQuizQuestion(request, classroom_id, lesson_id, question_id):
         'quizQuestion': quizQuestion,
         'form': form,
         })
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def deleteQuizQuestion(request, classroom_id, lesson_id, question_id):
+    # check if the quiz question belongs to the teacher
+    if QuizQuestion.objects.get(id=question_id).lesson.classroom.teacher != request.user.teacher:
+        messages.error(request, 'You do not have permission to delete this quiz question.')
+        return redirect('classroom:teacher')
+    quizQuestion = QuizQuestion.objects.get(id=question_id)
+    quizQuestion.delete()
+    return redirect('classroom:editQuiz', classroom_id=classroom_id, lesson_id=lesson_id)
+
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def addQuizQuestion(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    
+    if request.method == 'POST':
+        form = QuizQuestionForm(request.POST)
+        if form.is_valid():
+            # check if a quiz question with that order already exists
+            if QuizQuestion.objects.filter(lesson=lesson, order=form.cleaned_data['order']).exists():
+                messages.error(request, 'A quiz question with that order already exists.')
+                return redirect('classroom:addQuizQuestion', classroom_id=classroom_id, lesson_id=lesson_id)
+            
+            # save the quiz question without committing to the database
+            quiz = form.save(commit=False)
+            # this allows us to add the lesson to the quiz question
+            quiz.lesson = lesson
+            quiz.save()
+            
+            return redirect('classroom:editQuiz', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    form = QuizQuestionForm()
+    return render(request, 'classroom/addQuizQuestion.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'form': form,
+        })

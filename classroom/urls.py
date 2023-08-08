@@ -22,5 +22,7 @@ urlpatterns = [
     path('teacher/<int:classroom_id>/previewLesson/<int:lesson_id>/', views.previewLesson, name='previewLesson'),
     path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/newQuiz/', views.newQuiz, name='newQuiz'),
     path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/', views.editQuiz, name='editQuiz'),
-    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/question/<int:question_id>/', views.editQuizQuestion, name='editQuizQuestion'),
+    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/question/<int:question_id>/edit/', views.editQuizQuestion, name='editQuizQuestion'),
+    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/question/<int:question_id>/delete/', views.deleteQuizQuestion, name='deleteQuizQuestion'),
+    path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/question/add/', views.addQuizQuestion, name='addQuizQuestion'),
 ]

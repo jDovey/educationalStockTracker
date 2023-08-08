@@ -25,13 +25,15 @@
             <td>
                 <div class="btn-group" role="group" aria-label="Basic outlined example">
                     <a href="{% url 'classroom:editQuizQuestion' classroom.id lesson.id question.id %}" class="btn btn-outline-warning btn-sm" title="Edit question"><i class="material-symbols-outlined">edit</i></a>
-                    <a href="#" class="btn btn-outline-danger btn-sm" title="Remove question" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
+                    <a href="{% url 'classroom:deleteQuizQuestion' classroom.id lesson.id question.id %}" class="btn btn-outline-danger btn-sm" title="Remove question" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
                 </div>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<a href="{% url 'classroom:addQuizQuestion' classroom.id lesson.id %}" class="btn btn-primary" title="Add question">Add question</a>
 
 
 
