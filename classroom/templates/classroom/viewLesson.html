@@ -22,7 +22,7 @@
                 {% if not quizComplete %}
                 <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Take Quiz</a>
                 {% else %}
-                <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Show quiz results</a>
+                <a href="{% url 'classroom:viewQuizResults' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Show quiz results</a>
                 {% endif %}
                 {% if not surveyComplete %}
                 <a href="{% url 'classroom:survey' classroom.id lesson.id %}" class="btn btn-warning btn-block mt-2">Take Survey</a>

@@ -75,3 +75,20 @@ td, th {
     font-weight: bold;
     color: #537fbe;
 }
+
+.progress {
+    position: relative;
+}
+
+.progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: black;
+ }
+
+ .progress-label {
+    line-height: 1; /* Adjust this value as needed */
+    vertical-align: middle;
+    padding-top: 1px; /* Adjust this value as needed */
+}

@@ -522,10 +522,8 @@ def takeQuiz(request, classroom_id, lesson_id):
         if forms.is_valid():
             score = 0
             for i, form in enumerate(forms):
-                print(form.cleaned_data)
                 questionObj = quiz[i]
                 answer = form.cleaned_data[str(questionObj.question)]
-                print(answer)
                 
                 quiz_response = QuizResponse(
                     question=questionObj,
@@ -565,4 +563,34 @@ def takeQuiz(request, classroom_id, lesson_id):
         'lesson': lesson,
         'quiz': quiz,
         'forms': forms,
+        })
+    
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def viewQuizResults(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    quiz = QuizQuestion.objects.filter(lesson=lesson).order_by('order')
+    
+    if len(quiz) == 0:
+        messages.error(request, 'There is no quiz for this lesson.')
+        return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    # if the student has not submitted a quiz response for this lesson, redirect them to the lesson page
+    if not QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).exists():
+        messages.error(request, 'You have not submitted a quiz response for this lesson.')
+        return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    # get the students quiz responses
+    quiz_responses = QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).order_by('question__order')
+    
+    # get the students quiz score
+    quiz_score = LessonQuizScore.objects.get(lesson=lesson, student=request.user.student)
+    
+    return render(request, 'classroom/viewQuizResults.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'quiz': quiz,
+        'quiz_responses': quiz_responses,
+        'quiz_score': quiz_score,
         })

@@ -9,6 +9,7 @@
             <tr>
                 <th>Username</th>
                 <th>Overall Balance</th>
+                <th>XP</th>
             </tr>
         </thead>
         <tbody>
@@ -20,6 +21,7 @@
             {% endif %}
                 <td>{{ student.user.username }}</td>
                 <td>${{ student.total_value }}</td>
+                <td>{{ student.xp }}</td>
             </tr>
             {% endfor %}
         </tbody>
