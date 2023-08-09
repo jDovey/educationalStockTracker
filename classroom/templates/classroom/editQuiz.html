@@ -9,19 +9,20 @@
     <thead>
         <tr>
             <th>Question</th>
-            <th>Correct answer</th>
-            <th>Wrong answer 1</th>
-            <th>Wrong answer 2</th>
-            <th>Action</th>
+            <th>Answer</th>
+            <th>Option 1</th>
+            <th>Option 2</th>
+            <th>Option 3</th>
         </tr>
     </thead>
     <tbody>
         {% for question in quiz_questions %}
         <tr>
             <td>{{ question.question }}</td>
-            <td>{{ question.correctAnswer }}</td>
-            <td>{{ question.wrongAnswer1 }}</td>
-            <td>{{ question.wrongAnswer2 }}</td>
+            <td>{{ question.answer }}</td>
+            <td>{{ question.op1 }}</td>
+            <td>{{ question.op2 }}</td>
+            <td>{{ question.op3 }}</td>
             <td>
                 <div class="btn-group" role="group" aria-label="Basic outlined example">
                     <a href="{% url 'classroom:editQuizQuestion' classroom.id lesson.id question.id %}" class="btn btn-outline-warning btn-sm" title="Edit question"><i class="material-symbols-outlined">edit</i></a>

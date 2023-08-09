@@ -1,5 +1,7 @@
 from django import forms
 
+from random import shuffle
+
 from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
 from user.models import Student
 
@@ -121,17 +123,32 @@ class QuizQuestionForm(forms.ModelForm):
         fields = [
             'order',
             'question',
-            'correctAnswer',
-            'wrongAnswer1',
-            'wrongAnswer2'
+            'answer',
+            'op1',
+            'op2',
+            'op3'
         ]
         
         widgets = {
             'order': forms.NumberInput(attrs={'class': 'form-control'}),
             'question': forms.TextInput(attrs={'class': 'form-control'}),
-            'correctAnswer': forms.TextInput(attrs={'class': 'form-control'}),
-            'wrongAnswer1': forms.TextInput(attrs={'class': 'form-control'}),
-            'wrongAnswer2': forms.TextInput(attrs={'class': 'form-control'}),
+            'answer': forms.TextInput(attrs={'class': 'form-control'}),
+            'op1': forms.TextInput(attrs={'class': 'form-control'}),
+            'op2': forms.TextInput(attrs={'class': 'form-control'}),
+            'op3': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 QuizQuestionFormSet = forms.formset_factory(QuizQuestionForm, extra=3)
+
+# create quiz response form that has each option as a label and a radio button
+# the form should take in a quiz question and return a form with the question and options
+class QuizResponseForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        question = kwargs.pop('question')
+        super(QuizResponseForm, self).__init__(*args, **kwargs)
+        
+        options = [question.op1, question.op2, question.op3]
+        shuffle(options)
+        self.fields[question.question] = forms.ChoiceField(
+            choices=[(option, option) for option in options],
+            widget=forms.Select(attrs={'class': 'form-control'}))

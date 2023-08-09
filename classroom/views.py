@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from user.models import Student
-from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm
 
 import json
 
@@ -475,4 +475,35 @@ def addQuizQuestion(request, classroom_id, lesson_id):
         'classroom': classroom,
         'lesson': lesson,
         'form': form,
+        })
+    
+@login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def takeQuiz(request, classroom_id, lesson_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    quiz = QuizQuestion.objects.filter(lesson=lesson).order_by('order')
+    
+    if request.method == 'POST':
+        # for each question in the quiz get the form data and create a QuizResponse
+        for question in quiz:
+            answer = request.POST.get('%s-%s' % (question.id, question.question))
+            quizResponse = QuizResponse.objects.create(
+                question=question,
+                student=request.user.student,
+                answer=answer
+                )
+            quizResponse.save()
+        
+        return redirect('classroom:studentClassroom', classroom_id=classroom_id)
+    
+    forms = []
+    for question in quiz:
+        forms.append(QuizResponseForm(prefix=question.id, question=question))
+    
+    return render(request, 'classroom/quiz.html', {
+        'classroom': classroom,
+        'lesson': lesson,
+        'quiz': quiz,
+        'forms': forms,
         })

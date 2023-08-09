@@ -73,9 +73,10 @@ class QuizQuestion(models.Model):
     lesson = models.ForeignKey('classroom.Lesson', on_delete=models.CASCADE)
     question = models.CharField(max_length=100)
     order = models.PositiveIntegerField(default = 0, blank = False, null = False)
-    correctAnswer = models.CharField(max_length=100)
-    wrongAnswer1 = models.CharField(max_length=100)
-    wrongAnswer2 = models.CharField(max_length=100)
+    answer = models.CharField(max_length=100)
+    op1 = models.CharField(max_length=100)
+    op2 = models.CharField(max_length=100)
+    op3 = models.CharField(max_length=100)
     
     def __str__(self):
         return self.question + ' - ' + self.lesson.title
@@ -89,4 +90,4 @@ class QuizResponse(models.Model):
     answer = models.CharField(max_length=100)
     
     def __str__(self):
-        return self.question.question + ' - ' + self.student.user.username
+        return self.question.question + ' - ' + self.answer + ' - ' + self.student.user.username

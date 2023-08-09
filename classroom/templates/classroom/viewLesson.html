@@ -19,7 +19,7 @@
                 <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid rounded" style="height: 10rem; width: 10rem;">
             {% endif %}
             <div class="row">
-                <a class="btn btn-primary btn-block mt-2">Take Quiz</a>
+                <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Take Quiz</a>
                 <a href="{% url 'classroom:survey' classroom.id lesson.id %}" class="btn btn-warning btn-block mt-2">Take Survey</a>
             </div>
         </div>
