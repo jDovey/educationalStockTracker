@@ -91,3 +91,11 @@ class QuizResponse(models.Model):
     
     def __str__(self):
         return self.question.question + ' - ' + self.answer + ' - ' + self.student.user.username
+    
+class LessonQuizScore(models.Model):
+    class Meta:
+        unique_together = ('lesson', 'student')
+        
+    lesson = models.ForeignKey('classroom.Lesson', on_delete=models.CASCADE)
+    student = models.ForeignKey('user.Student', on_delete=models.CASCADE)
+    score = models.IntegerField()

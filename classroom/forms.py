@@ -147,7 +147,7 @@ class QuizResponseForm(forms.Form):
         question = kwargs.pop('question')
         super(QuizResponseForm, self).__init__(*args, **kwargs)
         
-        options = [question.op1, question.op2, question.op3]
+        options = [question.answer, question.op1, question.op2, question.op3]
         shuffle(options)
         self.fields[question.question] = forms.ChoiceField(
             choices=[(option, option) for option in options],

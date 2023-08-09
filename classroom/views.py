@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.forms import formset_factory
+from django.db.models import F
 
 from user.models import Student
-from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse, LessonQuizScore
 from user.decorators import allowed_users
 from core.models import Holdings
 from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase
@@ -505,6 +506,10 @@ def takeQuiz(request, classroom_id, lesson_id):
     lesson = Lesson.objects.get(id=lesson_id)
     quiz = QuizQuestion.objects.filter(lesson=lesson).order_by('order')
     
+    if len(quiz) == 0:
+        messages.error(request, 'There is no quiz for this lesson.')
+        return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
     # if the student has already submitted a quiz response for this lesson, redirect them to the lesson page
     if QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).exists():
         messages.error(request, 'You have already submitted a quiz response for this lesson.')
@@ -515,6 +520,7 @@ def takeQuiz(request, classroom_id, lesson_id):
     if request.method == 'POST':
         forms = QuizResponseFormSet(request.POST, prefix=0, question_list=quiz)
         if forms.is_valid():
+            score = 0
             for i, form in enumerate(forms):
                 print(form.cleaned_data)
                 questionObj = quiz[i]
@@ -527,7 +533,29 @@ def takeQuiz(request, classroom_id, lesson_id):
                     answer=answer,
                 )
                 quiz_response.save()
-        
+                # check if the answer is correct
+                if answer == questionObj.answer:
+                    score += 1
+            
+            # store the score
+            lessonScore = LessonQuizScore.objects.create(
+                lesson=lesson,
+                student=request.user.student,
+                score=score,
+            )
+            lessonScore.save()
+            
+            # update the students xp based on the % of questions they got correct
+            # get the total number of questions
+            numQuestions = len(quiz)
+            correctPercent = (score / numQuestions) * 100
+            # update students xp
+            student = request.user.student
+            student.xp = F("xp") + correctPercent
+            student.save()
+            # create a message to display to the student
+            messages.success(request, 'You have successfully submitted your quiz response. You got %d out of %d questions correct.' % (score, numQuestions))
+            
         return redirect('classroom:studentClassroom', classroom_id=classroom_id)
     
     forms = QuizResponseFormSet(prefix=0, question_list=quiz)
