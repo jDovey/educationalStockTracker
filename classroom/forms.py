@@ -152,3 +152,12 @@ class QuizResponseForm(forms.Form):
         self.fields[question.question] = forms.ChoiceField(
             choices=[(option, option) for option in options],
             widget=forms.Select(attrs={'class': 'form-control'}))
+
+class QuizResponseFormSetBase(forms.BaseFormSet):
+    def __init__(self, *args, question_list, **kwargs):
+        self.question_list = question_list
+        super().__init__(*args, **kwargs)
+        
+    def _construct_form(self, i, **kwargs):
+        kwargs['question'] = self.question_list[i]
+        return super()._construct_form(i, **kwargs)

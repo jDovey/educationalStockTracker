@@ -3,19 +3,19 @@
 {% block title %}{{ lesson.title }}{% endblock %}
     
 {% block content %}
-{% for question in quiz %}
-    {{question.question}}
-    {{question.correctAnswer}}
-    {{question.wrongAnswer1}}
-    {{question.wrongAnswer2}}
-{% endfor %}
 
-<p>forms!</p>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Quiz for: {{ lesson.title }}</h1>
+        </div>
+    </div>
 
 <div>
     <form action="." method="post">
         <div class="form-group"></div>
             {% csrf_token %}
+            {{ forms.management_form }}
             {% for form in forms %}
             <div class="mb-3">
                 {{ form.as_p }}

@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.forms import formset_factory
 
 from user.models import Student
 from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase
 
 import json
 
@@ -98,6 +99,10 @@ def teacherClassroom(request, classroom_id):
     for lesson in classroomLessons:
         # check if there is an associated quiz
         lesson.has_quiz = QuizQuestion.objects.filter(lesson=lesson).exists()
+        # get count of students who have completed the survey
+        lesson.survey_responses = SurveyResponse.objects.filter(lesson=lesson).count()
+        # get count of students who have completed the quiz
+        lesson.quiz_responses = QuizResponse.objects.filter(question__lesson=lesson).values('student').distinct().count()
         
     return render(request, 'classroom/teacherClassroom.html', {
         'classroom': classroom,
@@ -288,6 +293,20 @@ def deleteLesson(request, classroom_id, lesson_id):
 def viewLesson(request, classroom_id, lesson_id):
     classroom = Classroom.objects.get(id=classroom_id)
     lesson = Lesson.objects.get(id=lesson_id)
+    
+    surveyComplete = False
+    quizComplete = False
+    
+    # check if the student has already submitted a survey response for this lesson
+    if SurveyResponse.objects.filter(lesson=lesson, student=request.user.student).exists():
+        surveyComplete = True
+        
+    # check if the student has already submitted a quiz response for this lesson
+    # get first question from lesson
+    
+    if QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).exists():
+        quizComplete = True
+        
     # check if the lesson has a lesson outline
     if lesson.lesson_outline:
         lesson_outline = json.loads(lesson.lesson_outline)
@@ -302,6 +321,8 @@ def viewLesson(request, classroom_id, lesson_id):
         'classroom': classroom,
         'lesson': lesson,
         'lesson_outline': lesson_outline,
+        'surveyComplete': surveyComplete,
+        'quizComplete': quizComplete,
         })
     
 @login_required
@@ -484,22 +505,32 @@ def takeQuiz(request, classroom_id, lesson_id):
     lesson = Lesson.objects.get(id=lesson_id)
     quiz = QuizQuestion.objects.filter(lesson=lesson).order_by('order')
     
+    # if the student has already submitted a quiz response for this lesson, redirect them to the lesson page
+    if QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).exists():
+        messages.error(request, 'You have already submitted a quiz response for this lesson.')
+        return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    QuizResponseFormSet = formset_factory(QuizResponseForm, formset=QuizResponseFormSetBase, extra=len(quiz))
+    
     if request.method == 'POST':
-        # for each question in the quiz get the form data and create a QuizResponse
-        for question in quiz:
-            answer = request.POST.get('%s-%s' % (question.id, question.question))
-            quizResponse = QuizResponse.objects.create(
-                question=question,
-                student=request.user.student,
-                answer=answer
+        forms = QuizResponseFormSet(request.POST, prefix=0, question_list=quiz)
+        if forms.is_valid():
+            for i, form in enumerate(forms):
+                print(form.cleaned_data)
+                questionObj = quiz[i]
+                answer = form.cleaned_data[str(questionObj.question)]
+                print(answer)
+                
+                quiz_response = QuizResponse(
+                    question=questionObj,
+                    student=request.user.student,
+                    answer=answer,
                 )
-            quizResponse.save()
+                quiz_response.save()
         
         return redirect('classroom:studentClassroom', classroom_id=classroom_id)
     
-    forms = []
-    for question in quiz:
-        forms.append(QuizResponseForm(prefix=question.id, question=question))
+    forms = QuizResponseFormSet(prefix=0, question_list=quiz)
     
     return render(request, 'classroom/quiz.html', {
         'classroom': classroom,

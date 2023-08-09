@@ -19,8 +19,14 @@
                 <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid rounded" style="height: 10rem; width: 10rem;">
             {% endif %}
             <div class="row">
+                {% if not quizComplete %}
                 <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Take Quiz</a>
+                {% else %}
+                <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Show quiz results</a>
+                {% endif %}
+                {% if not surveyComplete %}
                 <a href="{% url 'classroom:survey' classroom.id lesson.id %}" class="btn btn-warning btn-block mt-2">Take Survey</a>
+                {% endif %}
             </div>
         </div>
     </div>
