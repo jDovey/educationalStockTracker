@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Student Detail{% endblock %}
+    
+{% block content %}
+    <h1>{{ student.user.username }}</h1>
+
+    <div>
+        <div>
+            Email: {{ student.user.email }}
+        </div>
+        <div>
+            Cash: ${{ student.cash }}
+        </div>
+        <div>
+            Total balance: ${{ student.total_value }}
+        </div>
+        <div>
+            XP: {{ student.xp }}
+        </div>
+    </div>
+    <div>
+        {% for lesson in lessons %}
+        <hr>
+        {% if not lesson.score.score %}
+        <p> Quiz for {{ lesson.title }} not taken yet</p>
+        {% else %}
+        <p> Quiz scores for {{ lesson.title }} | Score: {{ lesson.score.score }}</p>
+        <table class="table table-striped table-dark table-hover styled-table">
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>{{ student.user.username }} answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in lesson.responses %}
+                <tr>
+                    <td>{{ response.question.question}}</td>
+                    <td>{{ response.question.answer }}</td>
+                    <td>{{ response.answer }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -27,4 +27,5 @@ urlpatterns = [
     path('teacher/<int:classroom_id>/lesson/<int:lesson_id>/editQuiz/question/add/', views.addQuizQuestion, name='addQuizQuestion'),
     path('student/<int:classroom_id>/lesson/<int:lesson_id>/quiz/', views.takeQuiz, name='takeQuiz'),
     path('student/<int:classroom_id>/lesson/<int:lesson_id>/quiz/results', views.viewQuizResults, name='viewQuizResults'),
+    path('teacher/<int:classroom_id>/student/detail/<int:student_id>/', views.studentDetail, name='studentDetail'),
 ]

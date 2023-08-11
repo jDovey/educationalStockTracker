@@ -33,6 +33,8 @@
             <tr>
                 <th>Lesson</th>
                 <th>Description</th>
+                <th>Survey complete?</th>
+                <th>Quiz complete?</th>
             </tr>
         </thead>
         <tbody>
@@ -40,6 +42,18 @@
             <tr>
                 <td><div class="fw-bold"><a href="{% url 'classroom:viewLesson' classroom.id lesson.id %}"><strong>{{ lesson.title }}</strong></a></div></td>
                 <td>{{ lesson.description }}</td>
+                <td>{% if lesson.completed_survey %}
+                    Yes<i class="material-symbols-outlined text-success">Check_Circle</i>
+                    {% else %}
+                    <a href="{% url 'classroom:survey' classroom.id lesson.id %}" class="plain-link">No<i class="material-symbols-outlined text-danger">Unpublished</i></a>
+                    {% endif %}
+                </td>
+                <td>{% if lesson.completed_quiz %}
+                    <a href="{% url 'classroom:viewQuizResults' classroom.id lesson.id %}" class="plain-link">Yes<i class="material-symbols-outlined text-success">Check_Circle</i></a>
+                    {% else %}
+                    <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="plain-link">No<i class="material-symbols-outlined text-danger">Unpublished</i></a>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

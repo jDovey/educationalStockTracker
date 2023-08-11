@@ -21,7 +21,7 @@
     <tbody>
         {% for student in classroomStudents %}
         <tr>
-            <td>{{ student.user.username }}</td>
+            <td><a href="{% url 'classroom:studentDetail' classroom.id student.user_id %}">{{ student.user.username }}</td>
             <td>${{ student.total_value }}</td>
             <td>
             <div class="btn-group" role="group" aria-label="Basic outlined example">

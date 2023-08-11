@@ -123,6 +123,14 @@ def studentClassroom(request, classroom_id):
     classroomStudents = Student.objects.filter(classroom=classroom).order_by('-total_value')
     # get the published lessons in the classroom order by their order
     classroomLessons = Lesson.objects.filter(classroom=classroom, status='PUBLISHED').order_by('order')
+    
+    # for each lesson, check if the student has completed the survey and quiz
+    for lesson in classroomLessons:
+        if SurveyResponse.objects.filter(lesson=lesson, student=request.user.student).exists():
+            lesson.completed_survey = True
+        if QuizResponse.objects.filter(question__lesson=lesson, student=request.user.student).exists():
+            lesson.completed_quiz = True
+                 
     return render(request, 'classroom/studentClassroom.html', {
         'classroom': classroom,
         'classroomStudents': classroomStudents,
@@ -593,4 +601,42 @@ def viewQuizResults(request, classroom_id, lesson_id):
         'quiz': quiz,
         'quiz_responses': quiz_responses,
         'quiz_score': quiz_score,
+        })
+    
+@login_required
+@allowed_users(allowed_roles=['TEACHER'])
+def studentDetail(request, classroom_id, student_id):
+    # make sure the student is in the classroom
+    if not Student.objects.filter(classroom__id=classroom_id, user_id=student_id).exists():
+        messages.error(request, 'This student is not in this classroom.')
+        return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+    # make sure the teacher is the teacher of the classroom
+    if not Classroom.objects.filter(id=classroom_id, teacher=request.user.teacher).exists():
+        messages.error(request, 'You are not the teacher of this student.')
+        return redirect('classroom:teacherClassroom', classroom_id=classroom_id)
+    
+    lessons = Lesson.objects.filter(classroom__id=classroom_id).order_by('order')
+    classroom = Classroom.objects.get(id=classroom_id)
+    student = Student.objects.get(user_id=student_id)
+    
+    # for each lesson, get the quiz responses and add them to the lesson
+    for lesson in lessons:
+        # check if the student has submitted a quiz response for this lesson
+        if not QuizResponse.objects.filter(question__lesson=lesson, student=student).exists():
+            continue
+        # get the students score for this lesson
+        quiz_score = LessonQuizScore.objects.get(lesson=lesson, student=student)
+        # add the score to the lesson
+        lesson.score = quiz_score
+        # get the students responses for this lesson
+        responses = QuizResponse.objects.filter(question__lesson=lesson, student=student).order_by('question__order')
+        # add the responses to the lesson
+        lesson.responses = responses
+    
+    
+    
+    return render(request, 'classroom/studentDetail.html', {
+        'classroom': classroom,
+        'student': student,
+        'lessons': lessons,
         })
