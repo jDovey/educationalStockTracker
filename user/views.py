@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required 
 
-from .forms import RegisterForm
+from .forms import RegisterForm, PasswordChangingForm
 from .models import User, Student
 # Create your views here.
 
@@ -28,3 +30,24 @@ def register(request):
         
     return render(request, 'user/register.html', {'form': form})
 
+@login_required
+def profile(request):
+    return render(request, 'user/profile.html')
+
+class CustomPasswordChangeView(auth_views.PasswordChangeView):
+    template_name = 'user/change_password.html'
+    success_url = '/'
+    form_class = PasswordChangingForm
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'Password changed successfully!')
+        return response
+
+@login_required
+def deleteAccount(request):
+    if request.method == 'POST':
+        # delete the user from the database
+        request.user.delete()
+        messages.success(request, 'Account deleted successfully!')
+    return redirect('user:login')

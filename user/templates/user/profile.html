@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Change Password{% endblock %}
+    
+{% block content %}
+<div class="container">
+    <div>
+        {{ request.user.username}}
+    </div>
+{% if request.user.role == 'STUDENT'%}
+    <div>
+{{ request.user.student.xp }}
+    </div>
+{% endif %}
+    <div>
+        <a href="{% url 'user:change_password' %}" class="btn btn-primary m-3">Change password</a>
+        <a href="{% url 'user:delete_account' %}" class="btn btn-primary m-3" onclick="return confirm('Are you sure? This will delete all data associated with your account.');">Delete account</a>
+    </div>
+    
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
 from django.contrib.auth import views as auth_views
 
-from .views import register
+from .views import register, profile, CustomPasswordChangeView, deleteAccount
 
 from .models import User, Student
 # Create your tests here.
@@ -21,6 +21,18 @@ class TestUrls(SimpleTestCase):
     def test_logout_url_is_resolved(self):
         url = reverse('user:logout')
         self.assertEquals(resolve(url).func.view_class, auth_views.LogoutView)
+    
+    def test_profile_url_is_resolved(self):
+        url = reverse('user:profile')
+        self.assertEquals(resolve(url).func, profile)
+    
+    def test_customPasswordChange_url_is_resolved(self):
+        url = reverse('user:change_password')
+        self.assertEquals(resolve(url).func.view_class, CustomPasswordChangeView)
+    
+    def test_deleteAccount_url_is_resolved(self):
+        url = reverse('user:delete_account')
+        self.assertEquals(resolve(url).func, deleteAccount)
 
 class TestViews(TestCase):
 
@@ -74,6 +86,56 @@ class TestViews(TestCase):
         self.assertEquals(User.objects.count(), 0)
         # check that the student is not created
         self.assertEquals(Student.objects.count(), 0)
+        
+class TestProfileView(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+    
+    # test that profile view returns a 200 status code and uses the correct template on GET request
+    def test_profile_GET(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(reverse('user:profile'))
+
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'user/profile.html')
+    
+    # test that profile view returns a 302 status code and redirects to the login page on GET request when not logged in
+    def test_profile_GET_not_logged_in(self):
+        response = self.client.get(reverse('user:profile'))
+
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + reverse('user:profile'))
+
+class TestDeleteAccountView(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.studentUser = User.objects.create_user(username='teststudent', password='testpass', role='STUDENT')
+    
+    # test that deleteAccount redirects to the login page on GET request
+    def test_deleteAccount_GET(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.get(reverse('user:delete_account'))
+        
+        self.assertEquals(User.objects.count(), 1)
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login'))
+        
+    # test that deleteAccount view returns a 302 status code and redirects to the login page on GET request when not logged in
+    def test_deleteAccount_GET_not_logged_in(self):
+        response = self.client.get(reverse('user:delete_account'))
+
+        self.assertEquals(response.status_code, 302)
+        self.assertRedirects(response, reverse('user:login') + '?next=' + reverse('user:delete_account'))
+        
+    # test that deleteAccount will delete the user and redirect to the login page on POST request
+    def test_deleteAccount_POST(self):
+        self.client.login(username='teststudent', password='testpass')
+        response = self.client.post(reverse('user:delete_account'))
+
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(User.objects.count(), 0)
+        self.assertRedirects(response, reverse('user:login'))
 
 class TestUserModel(TestCase):
 
