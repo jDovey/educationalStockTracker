@@ -34,6 +34,11 @@ class Student(models.Model):
     
     def __str__(self):
         return self.user.username
+    
+    # xp reward function
+    def xpUp(self, xpGain):
+        self.xp+=xpGain
+        self.save()
 
 # Create a teacher when a user is created
 @receiver(post_save, sender=User)

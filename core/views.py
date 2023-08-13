@@ -169,17 +169,25 @@ def sell(request):
                 holding.quantity = F("quantity") - quantity
                 holding.save()
 
-            # Get the price of the stock.
-            price = lookup(symbol)
+            if cache.get(symbol):
+                price = cache.get(symbol)
+            else:
+                # Call lookup function from utils.py, the api call is made here.
+                price = lookup(symbol)
+                # Check if the api call was successful.
+                if price == "API LIMIT":
+                    messages.error(request, 'API LIMIT.')
+                    return redirect('core:buy')
+                elif price == "INVALID SYMBOL":
+                    messages.error(request, 'Invalid symbol.')
+                    return redirect('core:buy')
+                
+                cache.set(symbol, price, timeout=60*60*24)
 
-            # Check if the api call was successful.
-            if price == "API LIMIT":
-                messages.error(request, 'API LIMIT.')
-                return redirect('core:sell')
-            elif price == "INVALID SYMBOL":
-                messages.error(request, 'Invalid symbol.')
-                return redirect('core:sell')
-
+            # calculate the profit of the sale
+            profit = int((price - holding.purchase_price) * decimal.Decimal(quantity))
+            # increase the students xp by 10% of the profit but cap the increase at 50
+            student.xpUp(min(50, int(profit * 0.1)))
             # Update the student's balance. F is used to prevent race conditions.
             student.cash = F("cash") + (price * decimal.Decimal(quantity))
             student.save()

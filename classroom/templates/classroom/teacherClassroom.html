@@ -1,6 +1,6 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Classroom{% endblock %}
+{% block title %}{{ classroom.name }}{% endblock %}
     
 {% block content %}
 
@@ -9,6 +9,7 @@
 <h1>{{ classroom.name }}: {{ classroom.passcode }}</h1>
 <h2>{{ classroom.teacher.user.username }}</h2>
 
+<div class="table-responsive">
 <table class="table table-striped table-dark table-hover styled-table">
     <thead>
         <tr>
@@ -20,7 +21,7 @@
     <tbody>
         {% for student in classroomStudents %}
         <tr>
-            <td>{{ student.user.username }}</td>
+            <td><a href="{% url 'classroom:studentDetail' classroom.id student.user_id %}">{{ student.user.username }}</td>
             <td>${{ student.total_value }}</td>
             <td>
             <div class="btn-group" role="group" aria-label="Basic outlined example">
@@ -32,4 +33,44 @@
         {% endfor %}
     </tbody>
 </table>
+
+<table class="table table-striped table-dark table-hover styled-table">
+    <thead>
+        <tr>
+            <th>Lesson</th>
+            <th>Status</th>
+            <th>Actions</th>
+            <th>Quiz</th>
+            <th>Survey responses</th>
+            <th>Quiz responses</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lesson in classroomLessons %}
+        <tr>
+            <td><a href="{% url 'classroom:previewLesson' classroom.id lesson.id %}">{{ lesson.title }}</a></td>
+            <td>{{ lesson.status }}</td>
+            <td>
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                <a href="{% url 'classroom:editLesson' classroom.id lesson.id %}" class="btn btn-outline-warning btn-sm" title="Edit lesson"><i class="material-symbols-outlined">edit</i></a>
+                <a href="{% url 'classroom:deleteLesson' classroom.id lesson.id %}" class="btn btn-outline-danger btn-sm" title="Remove lesson" onclick="return confirm('Are you sure?');"><i class="material-symbols-outlined">delete</i></a>
+            </div>
+            </td>
+            <td>
+                <!-- check if current lesson has an associated quiz -->
+                {% if lesson.has_quiz %}
+                <a href="{% url 'classroom:editQuiz' classroom.id lesson.id %}" class="btn btn-outline-warning" title="Edit quiz"><i class="material-symbols-outlined">edit</id></a>
+                {% else %}
+                <a href="{% url 'classroom:newQuiz' classroom.id lesson.id %}" class="btn btn-outline-success" title="Add quiz"><i class="material-symbols-outlined">add</id></a>
+                {% endif %}
+            </td>
+            <td>{{ lesson.survey_responses }} / {{classroomStudents.count}}</td>
+            <td>{{ lesson.quiz_responses }} / {{classroomStudents.count}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<a href="{% url 'classroom:newLesson' classroom.id %}" class="btn btn-primary">Create Lesson</a>
 {% endblock %}
