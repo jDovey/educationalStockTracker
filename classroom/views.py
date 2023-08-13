@@ -9,7 +9,6 @@ from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizRespons
 from user.decorators import allowed_users
 from core.models import Holdings
 from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase
-
 import json
 
 # Create your views here.
@@ -378,6 +377,8 @@ def survey(request, classroom_id, lesson_id):
             surveyResponse.lesson = lesson
             surveyResponse.student = request.user.student
             surveyResponse.save()
+            
+            request.user.student.xpUp(10)
 
             messages.success(request, 'You have successfully submitted your survey response.')
             return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
@@ -556,9 +557,7 @@ def takeQuiz(request, classroom_id, lesson_id):
             numQuestions = len(quiz)
             correctPercent = (score / numQuestions) * 100
             # update students xp
-            student = request.user.student
-            student.xp = F("xp") + correctPercent
-            student.save()
+            request.user.student.xpUp(correctPercent)
             # create a message to display to the student
             messages.success(request, 'You have successfully submitted your quiz response. You got %d out of %d questions correct.' % (score, numQuestions))
             

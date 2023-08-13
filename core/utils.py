@@ -46,4 +46,3 @@ def lookup1(symbol):
         return "INVALID SYMBOL"
 
     return decimal.Decimal(price)
-
