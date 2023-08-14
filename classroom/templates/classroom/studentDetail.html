@@ -23,9 +23,9 @@
         {% for lesson in lessons %}
         <hr>
         {% if not lesson.score.score %}
-        <p> Quiz for {{ lesson.title }} not taken yet</p>
+        <p> Quiz for <strong>{{ lesson.title }}</strong> not taken yet</p>
         {% else %}
-        <p> Quiz scores for {{ lesson.title }} | Score: {{ lesson.score.score }}</p>
+        <p> Quiz scores for <strong>{{ lesson.title }}</strong> | Score: {{ lesson.score.score }}</p>
         <table class="table table-striped table-dark table-hover styled-table">
             <thead>
                 <tr>

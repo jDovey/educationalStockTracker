@@ -43,6 +43,7 @@
             <th>Quiz</th>
             <th>Survey responses</th>
             <th>Quiz responses</th>
+            <th>Average quiz score</th>
         </tr>
     </thead>
     <tbody>
@@ -66,6 +67,7 @@
             </td>
             <td>{{ lesson.survey_responses }} / {{classroomStudents.count}}</td>
             <td>{{ lesson.quiz_responses }} / {{classroomStudents.count}}</td>
+            <td>{{ lesson.average }}</td>
         </tr>
         {% endfor %}
     </tbody>

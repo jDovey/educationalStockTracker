@@ -10,6 +10,7 @@ from user.decorators import allowed_users
 from core.models import Holdings
 from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase
 import json
+import statistics
 
 # Create your views here.
 
@@ -103,6 +104,15 @@ def teacherClassroom(request, classroom_id):
         lesson.survey_responses = SurveyResponse.objects.filter(lesson=lesson).count()
         # get count of students who have completed the quiz
         lesson.quiz_responses = QuizResponse.objects.filter(question__lesson=lesson).values('student').distinct().count()
+        # get the average score of the students who have completed the quiz
+        # first get the score value of the students who have completed the quiz
+        studentScores = LessonQuizScore.objects.filter(lesson=lesson).values_list('score', flat=True)
+        # if there are no scores, set the average to 0
+        if not studentScores:
+            lesson.average = "Not taken yet"
+        else:
+            # then get the average of the scores and add to lesson
+            lesson.average = statistics.mean(studentScores)
         
     return render(request, 'classroom/teacherClassroom.html', {
         'classroom': classroom,
