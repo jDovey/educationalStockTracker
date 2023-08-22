@@ -2,7 +2,7 @@ from django import forms
 
 from random import shuffle
 
-from .models import Classroom, Lesson, SurveyResponse, QuizQuestion
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, CommentMessage
 from user.models import Student
 
 class NewClassroomForm(forms.ModelForm):
@@ -161,3 +161,14 @@ class QuizResponseFormSetBase(forms.BaseFormSet):
     def _construct_form(self, i, **kwargs):
         kwargs['question'] = self.question_list[i]
         return super()._construct_form(i, **kwargs)
+    
+class CommentMessageForm(forms.ModelForm):
+    class Meta:
+        model = CommentMessage
+        fields = ('content',)
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Add comment',
+                }),
+        }

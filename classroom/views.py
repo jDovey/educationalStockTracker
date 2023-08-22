@@ -5,10 +5,10 @@ from django.forms import formset_factory
 from django.db.models import F
 
 from user.models import Student
-from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse, LessonQuizScore
+from .models import Classroom, Lesson, SurveyResponse, QuizQuestion, QuizResponse, LessonQuizScore, CommentMessage
 from user.decorators import allowed_users
 from core.models import Holdings
-from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase
+from .forms import NewClassroomForm, JoinClassroomForm, EditStudentForm, LessonForm, LearningObjectiveFormSet, SurveyResponseForm, QuizQuestionFormSet, QuizQuestionForm, QuizResponseForm, QuizResponseFormSetBase, CommentMessageForm
 import json
 import statistics
 
@@ -312,6 +312,16 @@ def viewLesson(request, classroom_id, lesson_id):
     classroom = Classroom.objects.get(id=classroom_id)
     lesson = Lesson.objects.get(id=lesson_id)
     
+    # check if the student is in the classroom and the lesson is published
+    if lesson.classroom != request.user.student.classroom or lesson.status != 'PUBLISHED':
+        messages.error(request, 'You do not have permission to view this lesson.')
+        return redirect('classroom:student')
+    
+    # get the comments for the lesson 
+    comments = CommentMessage.objects.filter(lesson=lesson)
+    
+    
+    
     surveyComplete = False
     quizComplete = False
     
@@ -330,10 +340,20 @@ def viewLesson(request, classroom_id, lesson_id):
         lesson_outline = json.loads(lesson.lesson_outline)
     else:
         lesson_outline = None
+        
+        
+    if request.method == 'POST':
+        form = CommentMessageForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.lesson = lesson
+            comment.created_by = request.user
+            comment.save()
+            return redirect('classroom:viewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
     
-    if lesson.classroom != request.user.student.classroom or lesson.status != 'PUBLISHED':
-        messages.error(request, 'You do not have permission to view this lesson.')
-        return redirect('classroom:student')
+    form = CommentMessageForm()
+    
+    
     
     return render(request, 'classroom/viewLesson.html', {
         'classroom': classroom,
@@ -341,6 +361,8 @@ def viewLesson(request, classroom_id, lesson_id):
         'lesson_outline': lesson_outline,
         'surveyComplete': surveyComplete,
         'quizComplete': quizComplete,
+        'comments': comments,
+        'form': form,
         })
     
 @login_required
@@ -358,10 +380,25 @@ def previewLesson(request, classroom_id, lesson_id):
         messages.error(request, 'You do not have permission to view this lesson.')
         return redirect('classroom:teacher')
     
+    comments = CommentMessage.objects.filter(lesson=lesson)
+    
+    if request.method == 'POST':
+        form = CommentMessageForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.lesson = lesson
+            comment.created_by = request.user
+            comment.save()
+            return redirect('classroom:previewLesson', classroom_id=classroom_id, lesson_id=lesson_id)
+    
+    form = CommentMessageForm()
+    
     return render(request, 'classroom/viewLesson.html', {
         'classroom': classroom,
         'lesson': lesson,
         'lesson_outline': lesson_outline,
+        'form': form,
+        'comments': comments,
         })
     
 @login_required

@@ -30,5 +30,42 @@
             </div>
         </div>
     </div>
+    <hr>
+    <div class="row">
+        <h1 class="col-md-8">Comments</h1>
+        <div class="col-md-8">
+            {% for comment in comments %}
+            <div class="card mb-2 {% if comment.created_by == request.user %} bg-primary-subtle {% elif request.user.username in comment.content %} bg-warning-subtle {% else %} bg-secondary-subtle {% endif %}">
+                <div class="card-body">
+                    {% if comment.created_by.role == 'TEACHER' %}
+                    <span class="material-symbols-outlined">
+                        school
+                    </span>
+                    {% endif %}
+                    <p class="card-text">{{ comment.content }}</p>
+                    <p class="card-text"><small class="text-muted">Posted by {{ comment.created_by }} on {{ comment.created_at }}</small></p>
+                </div>
+            </div>
+            {% endfor %}
+        
+            <div>
+                <form action="." method="post">
+                    <div class="form-group"></div>
+                        {% csrf_token %}
+                        <div class="">
+                            {{ form.content }}
+                        </div>
+                        <!-- Display any form errors -->
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <p style="color: red">{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    <button class="m-3 btn btn-primary" type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -99,3 +99,15 @@ class LessonQuizScore(models.Model):
     lesson = models.ForeignKey('classroom.Lesson', on_delete=models.CASCADE)
     student = models.ForeignKey('user.Student', on_delete=models.CASCADE)
     score = models.IntegerField()
+    
+class CommentMessage(models.Model):
+    lesson = models.ForeignKey('classroom.Lesson', on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['created_at']
+        
+    def __str__(self):
+        return self.content + ' - ' + self.created_by.username + ' - ' + self.lesson.title
