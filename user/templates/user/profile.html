@@ -5,11 +5,11 @@
 {% block content %}
 <div class="container">
     <div>
-        {{ request.user.username}}
+        <strong>Username:</strong> {{ request.user.username}}
     </div>
 {% if request.user.role == 'STUDENT'%}
     <div>
-{{ request.user.student.xp }}
+        <strong>XP:</strong> {{ request.user.student.xp }}
     </div>
 {% endif %}
     <div>
