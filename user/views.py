@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 from .forms import RegisterForm, PasswordChangingForm
 from .models import User, Student
@@ -42,6 +43,10 @@ class CustomPasswordChangeView(auth_views.PasswordChangeView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, 'Password changed successfully!')
+        # after changing password, set the passwordTimeSet field to now
+        # this is used to check if the password is too old
+        self.request.user.passwordTimeSet = timezone.now()
+        self.request.user.save()
         return response
 
 @login_required

@@ -15,6 +15,7 @@ class User(AbstractUser):
     base_role = Role.STUDENT
     
     role = models.CharField(max_length=50, choices=Role.choices, default=base_role)
+    passwordTimeSet = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.username

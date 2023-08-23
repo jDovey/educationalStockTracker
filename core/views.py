@@ -6,7 +6,7 @@ from django.db.models import F, Sum
 from django.core.cache import cache
 
 from .utils import lookup
-from user.decorators import allowed_users
+from user.decorators import allowed_users, passwordAgeCheck
 from .forms import QuoteForm, BuyForm, SellForm
 from .models import Transactions, Holdings
 from user.models import Student
@@ -14,6 +14,7 @@ from user.models import Student
 import decimal
 
 # Create your views here.
+@passwordAgeCheck()
 @login_required
 def index(request):
     # redirect teachers to the classroom page
