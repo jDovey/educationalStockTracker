@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from classroom.models import Classroom
 
@@ -15,7 +16,7 @@ class User(AbstractUser):
     base_role = Role.STUDENT
     
     role = models.CharField(max_length=50, choices=Role.choices, default=base_role)
-    passwordTimeSet = models.DateTimeField(blank=True, null=True)
+    passwordTimeSet = models.DateTimeField(blank=True, null=True, default=timezone.now)  
 
     def __str__(self):
         return self.username

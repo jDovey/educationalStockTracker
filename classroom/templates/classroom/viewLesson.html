@@ -10,7 +10,7 @@
             <p><strong>{{ lesson.description }}</strong></p>
             {% for item in lesson_outline %}
             <hr>
-            <p>{{ item.learning_objective }}</p>
+            <p><strong>Learning objective:</strong> {{ item.learning_objective }}</p>
             <p>{{ item.content }}</p>
             {% endfor %}
         </div>

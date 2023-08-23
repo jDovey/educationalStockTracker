@@ -14,8 +14,9 @@ from user.models import Student
 import decimal
 
 # Create your views here.
-@passwordAgeCheck()
+
 @login_required
+@passwordAgeCheck()
 def index(request):
     # redirect teachers to the classroom page
     if request.user.role == 'TEACHER':
