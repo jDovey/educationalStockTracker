@@ -65,7 +65,7 @@
                 <a href="{% url 'classroom:newQuiz' classroom.id lesson.id %}" class="btn btn-outline-success" title="Add quiz"><i class="material-symbols-outlined">add</id></a>
                 {% endif %}
             </td>
-            <td>{{ lesson.survey_responses }} / {{classroomStudents.count}}</td>
+            <td><a href="{% url 'classroom:surveyResults' classroom.id lesson.id %}">{{ lesson.survey_responses }} / {{classroomStudents.count}}</a></td>
             <td>{{ lesson.quiz_responses }} / {{classroomStudents.count}}</td>
             <td>{{ lesson.average }}</td>
         </tr>
