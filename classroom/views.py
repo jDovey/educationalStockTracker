@@ -438,6 +438,16 @@ def survey(request, classroom_id, lesson_id):
         })
 
 @login_required
+@allowed_users(allowed_roles=['STUDENT'])
+def surveyResults(request, classroom_id, lesson_id):
+    # get the survey results for the lesson
+    surveyResults = SurveyResponse.objects.filter(lesson__id=lesson_id)
+    
+    return render(request, 'classroom/surveyResults.html', {
+        
+        })
+
+@login_required
 @allowed_users(allowed_roles=['TEACHER'])
 def newQuiz(request, classroom_id, lesson_id):
     classroom = Classroom.objects.get(id=classroom_id)
