@@ -13,8 +13,11 @@
     </div>
 {% endif %}
     <div>
-        <a href="{% url 'user:change_password' %}" class="btn btn-primary m-3">Change password</a>
-        <a href="{% url 'user:delete_account' %}" class="btn btn-primary m-3" onclick="return confirm('Are you sure? This will delete all data associated with your account.');">Delete account</a>
+        <form action="{% url 'user:delete_account' %}" method="post">
+            {% csrf_token %}
+            <a href="{% url 'user:change_password' %}" class="btn btn-primary m-3">Change password</a>
+            <button class="btn btn-primary m-3" type="submit"onclick="return confirm('Are you sure? This will delete all data associated with your account.');">Delete account</button>
+        </form>
     </div>
     
 </div>

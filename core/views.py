@@ -23,13 +23,9 @@ def index(request):
         return redirect('classroom:teacher')
     if request.method == 'POST':
 
-        # check cache first
-        if cache.get(request.user):
-            student = cache.get(request.user)
-        else:
-            # Get the student object.
-            student = get_object_or_404(Student, user=request.user)
-            cache.set(request.user, student, timeout=60*60*24)
+        
+        # Get the student object.
+        student = get_object_or_404(Student, user=request.user)
         # get the holdings of the student and group the holdings by symbol and purchase price
         holdings = Holdings.objects.filter(student=student).values('symbol', 'purchase_price').annotate(quantity=Sum('quantity'))
 

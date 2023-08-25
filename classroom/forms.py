@@ -69,7 +69,7 @@ class LessonForm(forms.ModelForm):
         'placeholder': 'Title',
     }))
     
-    description = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+    description = forms.CharField(max_length=256, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Description',
     }))
@@ -83,7 +83,7 @@ class LearningObjectiveForm(forms.Form):
     class Meta:
         fields = ('learning_objective', 'content')
         
-    learning_objective = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+    learning_objective = forms.CharField(max_length=256, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Learning Objective',
     }))
