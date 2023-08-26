@@ -1,5 +1,6 @@
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse, resolve
+from django.db import transaction
 
 from .views import index, buy, sell, quote, history, leaderboard
 from .models import Holdings, Transactions
@@ -144,15 +145,19 @@ class TestBuy(TestCase):
 
     # test that buy view returns a 200 status code and uses the correct template on POST request with a logged in user
     def test_buy_POST(self):
-        response = self.client.post(self.buy_url, {
-            'symbol': 'AAPL',
-            'shares': 1
-            })
+        with transaction.atomic():
+            response = self.client.post(self.buy_url, {
+                'symbol': 'AAPL',
+                'shares': 1
+                })
         
+        self.user.student.refresh_from_db()
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/index.html')
         self.assertEquals(Holdings.objects.count(), 1)
         self.assertEquals(Transactions.objects.count(), 1)
+        # test that the student's cash is updated
+        self.assertNotEquals(self.user.student.cash, 10000)
     
     # test that buy view redirects back to buy page if symbol is invalid
     def test_buy_POST_invalid_symbol(self):
