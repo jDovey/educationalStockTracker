@@ -5,7 +5,7 @@ from django.db.models import F, Sum
 
 from django.core.cache import cache
 
-from .utils import lookup
+from .utils import lookup, eightNextDay
 from user.decorators import allowed_users, passwordAgeCheck
 from .forms import QuoteForm, BuyForm, SellForm
 from .models import Transactions, Holdings
@@ -22,8 +22,6 @@ def index(request):
     if request.user.role == 'TEACHER':
         return redirect('classroom:teacher')
     if request.method == 'POST':
-
-        
         # Get the student object.
         student = get_object_or_404(Student, user=request.user)
         # get the holdings of the student and group the holdings by symbol and purchase price
@@ -48,7 +46,9 @@ def index(request):
                     return redirect('core:index')
                 
                 # add price to cache, setting to timeout to 24 hours
-                cache.set(holding['symbol'], price, timeout=60*60*24)
+                cache.set(holding['symbol'], price, timeout=eightNextDay())
+            
+
             
                 
             

@@ -4,6 +4,7 @@ import decimal
 from bs4 import BeautifulSoup
 import chardet
 import lxml
+import datetime
 
 # API call to get stock price
 def lookup(symbol):
@@ -46,3 +47,10 @@ def lookup1(symbol):
         return "INVALID SYMBOL"
 
     return decimal.Decimal(price)
+
+def eightNextDay():
+    now = datetime.datetime.now()
+    next_day_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
+    time_until_8am = (next_day_8am - now).total_seconds()
+
+    return time_until_8am
