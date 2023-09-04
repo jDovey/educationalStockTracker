@@ -45,7 +45,7 @@ def index(request):
                     messages.error(request, 'Invalid symbol.')
                     return redirect('core:index')
                 
-                # add price to cache, setting to timeout to 24 hours
+                # add price to cache, setting to timeout at 8am the next day
                 cache.set(holding['symbol'], price, timeout=eightNextDay())
             
 
@@ -100,7 +100,8 @@ def buy(request):
                     messages.error(request, 'Invalid symbol.')
                     return redirect('core:buy')
                 
-                cache.set(symbol, price, timeout=60*60*24)
+                # add price to cache, setting to timeout at 8am the next day
+                cache.set(symbol, price, timeout=eightNextDay())
 
             
 
@@ -135,6 +136,8 @@ def buy(request):
             
             messages.success(request, 'Successful transaction! %s %s share(s) at $%s per share.' % (shares, symbol, price))
             return render(request, 'core/index.html')
+        else:
+            return render(request, 'core/buy.html', {'form': form})
 
     form = BuyForm()
     return render(request, 'core/buy.html', {'form': form})
@@ -180,7 +183,8 @@ def sell(request):
                     messages.error(request, 'Invalid symbol.')
                     return redirect('core:buy')
                 
-                cache.set(symbol, price, timeout=60*60*24)
+                # add price to cache, setting to timeout at 8am the next day
+                cache.set(holding['symbol'], price, timeout=eightNextDay())
 
             # calculate the profit of the sale
             profit = int((price - holding.purchase_price) * decimal.Decimal(quantity))
@@ -223,7 +227,8 @@ def quote(request):
                     messages.error(request, 'Invalid symbol.')
                     return redirect('core:quote')
                 
-                cache.set(symbol, price, timeout=60*60*24)
+                # add price to cache, setting to timeout at 8am the next day
+                cache.set(symbol, price, timeout=eightNextDay())
 
                 
 

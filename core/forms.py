@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import MinValueValidator
 
 from .models import Holdings
 
@@ -15,7 +16,9 @@ class BuyForm(forms.Form):
         'placeholder': 'Symbol',
         'autofocus': 'autofocus',
         }))
-    shares = forms.IntegerField(widget=forms.NumberInput(attrs={
+    shares = forms.IntegerField(
+        validators=[MinValueValidator(1)],
+        widget=forms.NumberInput(attrs={
         'class': 'form-control',
         'placeholder': 'Number of shares',
         }))
