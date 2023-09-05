@@ -135,7 +135,7 @@ def buy(request):
                 holding.save()
             
             messages.success(request, 'Successful transaction! %s %s share(s) at $%s per share.' % (shares, symbol, price))
-            return render(request, 'core/index.html')
+            return redirect('core:index')
         else:
             return render(request, 'core/buy.html', {'form': form})
 
@@ -200,7 +200,7 @@ def sell(request):
 
             messages.success(request, 'Successful transaction! Sold %s %s share(s) at $%s per share. For a profit/loss of $%s!' % (quantity, symbol, price, price - holding.purchase_price))
 
-            return render(request, 'core/index.html')
+            return redirect('core:index')
     form = SellForm(request=request)
     return render(request, 'core/sell.html', {
         'form': form
