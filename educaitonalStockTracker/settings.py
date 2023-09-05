@@ -97,25 +97,29 @@ WSGI_APPLICATION = 'educaitonalStockTracker.wsgi.application'
 
 # local postgresql docker container (on macbook and pc)
 # postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB
-DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB')
+#DATABASE_URL = os.environ.setdefault('DATABASE_URL', 'postgres://postgres:mysecretpassword@localhost:5432/educationalStockTrackerDB')
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+#DATABASE_URL = os.environ.get('DATABASE_URL')
 # Database 
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': dj_database_url.config(
         # Feel free to alter this value to suit your needs.
-        default=DATABASE_URL,
+        default= "postgres://educationalstocktrackerdb_gymg_user:g2IdTYT2yx7QgpCMiHULjyVJZzEVJUqj@dpg-cihg775ph6erq6ii13bg-a.frankfurt-postgres.render.com/educationalstocktrackerdb_gymg",
         conn_max_age=600
     )
 }
 
 # redis cache
+CACHE_URL = os.environ.setdefault('CACHE_URL', "redis://127.0.0.1:6379")
+                                  
+CACHE_URL = os.environ.get('CACHE_URL')
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
+        "LOCATION": "rediss://red-cjrkrk61208c73blfegg:uRzGzTFY2HrahRcaBQFuzlaU3e8tbNlO@frankfurt-redis.render.com:6379",
     }
 }
 
