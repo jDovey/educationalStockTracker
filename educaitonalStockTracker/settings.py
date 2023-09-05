@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 import dj_database_url
+import django.core.cache.backends.redis
 
 from pathlib import Path
 
