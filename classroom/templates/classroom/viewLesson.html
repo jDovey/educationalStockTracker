@@ -6,26 +6,26 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8">
-            <h1>{{ lesson.title }}</h1>
-            <p><strong>{{ lesson.description }}</strong></p>
+            <h1 aria-label="lesson-title">{{ lesson.title }}</h1>
+            <p aria-label="lesson-description"><strong>{{ lesson.description }}</strong></p>
             {% for item in lesson_outline %}
             <hr>
-            <p><strong>Learning objective:</strong> {{ item.learning_objective }}</p>
-            <p>{{ item.content }}</p>
+            <p aria-label="learning objective"><strong>Learning objective:</strong> {{ item.learning_objective }}</p>
+            <p aria-label="content">{{ item.content }}</p>
             {% endfor %}
         </div>
         <div class="col-6 col-md-4">
             {% if lesson.image %}
-                <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}" class="img-fluid rounded" style="height: 10rem; width: 10rem;">
+                <img src="{{ lesson.image.url }}" alt="{{ lesson.title }}-image" class="img-fluid rounded" style="height: 10rem; width: 10rem;">
             {% endif %}
             <div class="row">
                 {% if not quizComplete %}
-                <a href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Take Quiz</a>
+                <a aria-label="take-quiz-button" href="{% url 'classroom:takeQuiz' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Take Quiz</a>
                 {% else %}
-                <a href="{% url 'classroom:viewQuizResults' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Show quiz results</a>
+                <a aria-label="quiz-results-button" href="{% url 'classroom:viewQuizResults' classroom.id lesson.id %}" class="btn btn-primary btn-block mt-2">Show quiz results</a>
                 {% endif %}
                 {% if not surveyComplete %}
-                <a href="{% url 'classroom:survey' classroom.id lesson.id %}" class="btn btn-warning btn-block mt-2">Take Survey</a>
+                <a aria-label="survey-button" href="{% url 'classroom:survey' classroom.id lesson.id %}" class="btn btn-warning btn-block mt-2">Take Survey</a>
                 {% endif %}
             </div>
         </div>

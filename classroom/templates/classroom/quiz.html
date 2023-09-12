@@ -17,7 +17,7 @@
             {% csrf_token %}
             {{ forms.management_form }}
             {% for form in forms %}
-            <div class="mb-3">
+            <div class="mb-3" aria-label="quiz-question">
                 {{ form.as_p }}
             </div>
             {% endfor %}
